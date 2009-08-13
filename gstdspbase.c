@@ -1034,10 +1034,8 @@ change_state(GstElement *element,
 
 	switch (transition) {
 	case GST_STATE_CHANGE_NULL_TO_READY:
-		if (!dsp_init(self)) {
+		if (!dsp_init(self))
 			gstdsp_post_error(self, "dsp init failed");
-			return GST_STATE_CHANGE_FAILURE;
-		}
 		break;
 
 	case GST_STATE_CHANGE_READY_TO_PAUSED:
@@ -1066,20 +1064,16 @@ change_state(GstElement *element,
 
 	switch (transition) {
 	case GST_STATE_CHANGE_PAUSED_TO_READY:
-		if (!_dsp_stop(self)) {
+		if (!_dsp_stop(self))
 			gstdsp_post_error(self, "dsp stop failed");
-			return GST_STATE_CHANGE_FAILURE;
-		}
 		if (self->reset)
 			self->reset(self);
 		gst_caps_replace(&self->tmp_caps, NULL);
 		break;
 
 	case GST_STATE_CHANGE_READY_TO_NULL:
-		if (!dsp_deinit(self)) {
+		if (!dsp_deinit(self))
 			gstdsp_post_error(self, "dsp deinit failed");
-			return GST_STATE_CHANGE_FAILURE;
-		}
 		break;
 
 	default:
