@@ -173,6 +173,12 @@ create_node(GstDspBase *base)
 		if (self->profile == 77 || self->profile == 100)
 			base->codec = &td_hdh264dec_hp_codec;
 		break;
+	case GSTDSP_MPEG4VDEC:
+		if (self->width * self->height > 864 * 480) {
+			base->alg = GSTDSP_HDMPEG4VDEC;
+			base->codec = &td_hdmp4vdec_codec;
+		}
+		break;
 	default:
 		break;
 	}
@@ -185,8 +191,11 @@ create_node(GstDspBase *base)
 
 	pr_info(base, "algo=%s", codec->filename);
 
-	/* SN_API == 0 doesn't have it, so don't fail */
-	(void) gstdsp_register(dsp_handle, &conversions_uuid, DSP_DCD_LIBRARYTYPE, "conversions.dll64P");
+	/* Register conversions library only for TI codecs */
+	if (!(base->alg == GSTDSP_HDMPEG4VDEC || base->alg == GSTDSP_HDH264VDEC)) {
+		/* SN_API == 0 doesn't have it, so don't fail */
+		(void) gstdsp_register(dsp_handle, &conversions_uuid, DSP_DCD_LIBRARYTYPE, "conversions.dll64P");
+	}
 
 	if (!gstdsp_register(dsp_handle, codec->uuid, DSP_DCD_LIBRARYTYPE, codec->filename)) {
 		pr_err(self, "failed to register algo node library");
@@ -401,7 +410,7 @@ sink_setcaps(GstPad *pad,
 
 	name = gst_structure_get_name(in_struc);
 	if (strcmp(name, "video/x-h264") == 0) {
-		base->alg = GSTDSP_H264DEC;
+		base->alg = GSTDSP_HDH264VDEC;
 		self->priv.h264.lol = 0;
 		self->priv.h264.hd_h264_streamtype = 0;
 		self->priv.h264.ref_frames = 0;
@@ -430,8 +439,12 @@ sink_setcaps(GstPad *pad,
 		gst_structure_get_boolean(in_struc, "interlaced",
 					  &self->jpeg_is_interlaced);
 	}
-	else {
+	else if (strcmp(name, "video/x-divx") == 0) {
 		base->alg = GSTDSP_MPEG4VDEC;
+		base->parse_func = gst_dsp_mpeg4_parse;
+	}
+	else {
+		base->alg = GSTDSP_HDMPEG4VDEC;
 		base->parse_func = gst_dsp_mpeg4_parse;
 	}
 

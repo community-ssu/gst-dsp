@@ -60,8 +60,8 @@ instance_init(GTypeInstance *instance,
 	GstDspBase *base = GST_DSP_BASE(instance);
 	GstDspVEnc *self = GST_DSP_VENC(instance);
 
-	base->alg = GSTDSP_H263ENC;
-	base->codec = &td_mp4venc_codec;
+	base->alg = GSTDSP_H263P0ENC;
+	base->codec = &td_hdmp4venc_codec;
 	base->use_pinned = true;
 
 	self->supported_levels = levels;
