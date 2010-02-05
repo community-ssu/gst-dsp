@@ -90,6 +90,7 @@ bool gst_dsp_h263_parse(GstDspBase *base, GstBuffer *buf)
 		{ 16, 11 },
 		{ 40, 33 },
 	};
+	GstDspVDec *vdec = GST_DSP_VDEC(base);
 
 	init_get_bits(&s, buf->data, buf->size * 8);
 
@@ -197,8 +198,8 @@ bool gst_dsp_h263_parse(GstDspBase *base, GstBuffer *buf)
 	}
 
 exit:
-	/* TODO use to decide on node */
 	pr_debug(base, "baseline=%u", baseline);
+	vdec->profile = baseline ? 1 : 0;
 	pr_debug(base, "width=%u, height=%u, par=%d:%d", width, height,
 			par_num, par_den);
 

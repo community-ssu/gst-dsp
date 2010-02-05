@@ -13,7 +13,7 @@ tidsp.a: tidsp/td_mp4vdec.o tidsp/td_h264dec.o tidsp/td_wmvdec.o \
 	tidsp/td_jpegenc.o tidsp/td_h264enc.o \
 	tidsp/td_vpp.o \
 	tidsp/td_mp4venc_common.o tidsp/td_h264dec_common.o \
-	tidsp/td_hdmp4venc.o
+	tidsp/td_hdmp4venc.o tidsp/td_hdmp4vdec.o
 tidsp.a: override CFLAGS += -I.
 
 # plugin

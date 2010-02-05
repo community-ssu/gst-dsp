@@ -30,6 +30,7 @@ enum {
 	GSTDSP_H263DEC,
 	GSTDSP_WMVDEC,
 	GSTDSP_JPEGDEC,
+	GSTDSP_HDMPEG4VDEC,
 };
 
 union vdec_priv_data {
@@ -52,6 +53,7 @@ struct _GstDspVDec {
 	gboolean codec_data_sent;
 	guint32 color_format;
 	gint mode;
+	int profile;
 
 	union vdec_priv_data priv;
 };

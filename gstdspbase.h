@@ -185,6 +185,7 @@ extern struct td_codec td_mp4vdec_codec;
 extern struct td_codec td_h264dec_codec;
 extern struct td_codec td_wmvdec_codec;
 extern struct td_codec td_jpegdec_codec;
+extern struct td_codec td_hdmp4vdec_codec;
 
 extern struct td_codec td_mp4venc_codec;
 extern struct td_codec td_jpegenc_codec;

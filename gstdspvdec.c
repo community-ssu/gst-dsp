@@ -434,6 +434,9 @@ sink_setcaps(GstPad *pad,
 	case GSTDSP_JPEGDEC:
 		codec = &td_jpegdec_codec;
 		break;
+	case GSTDSP_HDMPEG4VDEC:
+		codec = &td_hdmp4vdec_codec;
+		break;
 	default:
 		codec = NULL;
 		break;
