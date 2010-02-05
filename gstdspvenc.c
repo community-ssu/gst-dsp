@@ -274,10 +274,12 @@ sink_setcaps(GstPad *pad,
 					      NULL);
 		break;
 	case GSTDSP_H263ENC:
+	case GSTDSP_H263P0ENC:
 		out_struc = gst_structure_new("video/x-h263",
 					      "variant", G_TYPE_STRING, "itu",
 					      NULL);
 		break;
+	case GSTDSP_HDMP4VENC:
 	case GSTDSP_MP4VENC:
 		out_struc = gst_structure_new("video/mpeg",
 					      "mpegversion", G_TYPE_INT, 4,
@@ -329,6 +331,10 @@ sink_setcaps(GstPad *pad,
 	case GSTDSP_JPEGENC:
 		du_port_alloc_buffers(base->ports[0], 1);
 		du_port_alloc_buffers(base->ports[1], 2);
+		break;
+	case GSTDSP_HDMP4VENC:
+		du_port_alloc_buffers(base->ports[0], 6);
+		du_port_alloc_buffers(base->ports[1], 8);
 		break;
 	default:
 		du_port_alloc_buffers(base->ports[0], 2);
@@ -571,8 +577,10 @@ reset(GstDspBase *base)
 		gst_buffer_replace(&self->priv.h264.sps, NULL);
 		gst_buffer_replace(&self->priv.h264.pps, NULL);
 		gst_buffer_replace(&self->priv.h264.codec_data, NULL);
-	} else
+	} else {
 		self->priv.mpeg4.codec_data_done = FALSE;
+		self->priv.mpeg4.vbv_size = 0;
+	}
 }
 
 static void

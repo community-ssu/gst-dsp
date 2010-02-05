@@ -32,6 +32,7 @@ union venc_priv_data {
 	} h264;
 	struct {
 		gboolean codec_data_done;
+		gint vbv_size;
 	} mpeg4;
 };
 
@@ -47,6 +48,8 @@ enum {
 	GSTDSP_H263ENC,
 	GSTDSP_MP4VENC,
 	GSTDSP_H264ENC,
+	GSTDSP_HDMP4VENC,
+	GSTDSP_H263P0ENC,
 };
 
 struct _GstDspVEnc {

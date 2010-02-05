@@ -83,6 +83,18 @@ gst_dsp_h264enc_get_type
 </SECTION>
 
 <SECTION>
+<FILE>element-dsphdmp4venc</FILE>
+<TITLE>dsphdmp4venc</TITLE>
+GstDspHdMp4VEnc
+<SUBSECTION Standard>
+GST_DSP_HD_MP4VENC
+GST_DSP_HD_MP4VENC_TYPE
+GST_DSP_HD_MP4VENC_CLASS
+GstDspHdMp4VEncClass
+gst_dsp_hd_mp4venc_get_type
+</SECTION>
+
+<SECTION>
 <FILE>gstdspvenc</FILE>
 <TITLE>dspvenc</TITLE>
 GstDspVEnc

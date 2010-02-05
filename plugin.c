@@ -19,6 +19,7 @@
 #include "gstdsph264enc.h"
 #include "gstdspvpp.h"
 #include "gstdspipp.h"
+#include "gstdsphdmp4venc.h"
 
 GstDebugCategory *gstdsp_debug;
 
@@ -51,6 +52,9 @@ plugin_init(GstPlugin *plugin)
 		return FALSE;
 
 	if (!gst_element_register(plugin, "dspipp", GST_RANK_PRIMARY + 1, GST_DSP_IPP_TYPE))
+		return FALSE;
+
+	if (!gst_element_register(plugin, "dsphdmp4venc", GST_RANK_PRIMARY + 1, GST_DSP_HD_MP4VENC_TYPE))
 		return FALSE;
 
 	return TRUE;
