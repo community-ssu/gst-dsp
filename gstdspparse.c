@@ -553,6 +553,8 @@ bool gst_dsp_h264_parse(GstDspBase *base, GstBuffer *buf)
 	guint subwc[] = { 1, 2, 2, 1 }, subhc[] = { 1, 2, 1, 1 };
 	guint32 d;
 	bool avc;
+	unsigned ref_frames;
+	unsigned poc_type;
 	uint8_t *rbsp_buffer = NULL;
 	unsigned rbsp_len;
 
@@ -713,6 +715,7 @@ try_again:
 	/* pic_order_cnt_type */
 	b = get_ue_golomb(&s);
 	CHECK_EOS(&s);
+	poc_type = b;
 	if (b == 0) {
 		/* log2_max_pic_order_cnt_lsb_minus4 */
 		get_ue_golomb(&s);
@@ -738,7 +741,7 @@ try_again:
 		}
 	}
 	/* num_ref_frames */
-	get_ue_golomb(&s);
+	ref_frames = get_ue_golomb(&s);
 	CHECK_EOS(&s);
 	/* gaps_in_frame_num_value_allowed_flag */
 	read_bits(&s, 1);
@@ -794,7 +797,11 @@ try_again:
 
 	pr_debug(base, "final width=%u, height=%u", crop_width, crop_height);
 
+	vdec->profile = profile;
 	vdec->priv.h264.is_avc = avc;
+	vdec->priv.h264.ref_frames = ref_frames;
+	vdec->priv.h264.initial_height = height;
+	vdec->priv.h264.poc_type = poc_type;
 
 	set_framesize(base, width, height, 0, 0, crop_width, crop_height);
 	free(rbsp_buffer);

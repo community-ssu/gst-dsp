@@ -167,6 +167,16 @@ create_node(GstDspBase *base)
 		return NULL;
 	}
 
+	/* codec fixups */
+	switch (base->alg) {
+	case GSTDSP_HDH264VDEC:
+		if (self->profile == 77 || self->profile == 100)
+			base->codec = &td_hdh264dec_hp_codec;
+		break;
+	default:
+		break;
+	}
+
 	codec = base->codec;
 	if (!codec) {
 		pr_err(self, "unknown algorithm");
@@ -386,12 +396,16 @@ sink_setcaps(GstPad *pad,
 		goto skip_setup;
 
 	base->parsed = false;
+	self->profile = 0;
 
 	name = gst_structure_get_name(in_struc);
 	if (strcmp(name, "video/x-h264") == 0) {
 		base->alg = GSTDSP_H264DEC;
 		self->priv.h264.lol = 0;
+		self->priv.h264.hd_h264_streamtype = 0;
+		self->priv.h264.ref_frames = 0;
 		base->parse_func = gst_dsp_h264_parse;
+		self->priv.h264.initial_height = 0;
 	}
 	else if (strcmp(name, "video/x-h263") == 0) {
 		base->alg = GSTDSP_H263DEC;
@@ -436,6 +450,9 @@ sink_setcaps(GstPad *pad,
 		break;
 	case GSTDSP_HDMPEG4VDEC:
 		codec = &td_hdmp4vdec_codec;
+		break;
+	case GSTDSP_HDH264VDEC:
+		codec = &td_hdh264dec_bp_codec;
 		break;
 	default:
 		codec = NULL;

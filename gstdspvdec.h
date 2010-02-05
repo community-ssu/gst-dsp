@@ -31,12 +31,17 @@ enum {
 	GSTDSP_WMVDEC,
 	GSTDSP_JPEGDEC,
 	GSTDSP_HDMPEG4VDEC,
+	GSTDSP_HDH264VDEC,
 };
 
 union vdec_priv_data {
 	struct {
 		gint lol;
 		gboolean is_avc;
+		gint hd_h264_streamtype;
+		guint32 ref_frames;
+		guint32 initial_height;
+		unsigned poc_type;
 	} h264;
 	struct {
 		gboolean is_divx;
