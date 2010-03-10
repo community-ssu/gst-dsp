@@ -137,6 +137,80 @@ void gstdsp_vdec_len_fixup(GstDspVDec *self, dmm_buffer_t *b)
 		b->len = self->crop_width * self->crop_height * 3 / 2;
 }
 
+static bool
+check_force_codec(GstDspVDec *self)
+{
+	GstDspBase *base = GST_DSP_BASE(self);
+	const char *codec;
+
+	codec = g_getenv(CODEC_ENV_VAR);
+	if (!codec)
+		return false;
+
+	pr_info(self, "codec choice %s", codec);
+	if (strcmp(codec, "HD") == 0) {
+		switch (base->alg) {
+		case GSTDSP_MPEG4VDEC:
+		case GSTDSP_H263DEC:
+			base->alg = GSTDSP_HDMPEG4VDEC;
+			base->codec = &td_hdmp4vdec_codec;
+			break;
+		case GSTDSP_H264DEC:
+			base->alg = GSTDSP_HDH264VDEC;
+			break;
+		default:
+			break;
+		}
+	} else if (strcmp(codec, "HP") == 0) {
+		switch (base->alg) {
+		case GSTDSP_H264DEC:
+			base->alg = GSTDSP_HDH264VDEC;
+			base->codec = &td_hdh264dec_hp_codec;
+			break;
+		default:
+			break;
+		}
+	} else {
+		switch (base->alg) {
+		case GSTDSP_HDMPEG4VDEC:
+			base->alg = GSTDSP_MPEG4VDEC;
+			base->codec = &td_mp4vdec_codec;
+			break;
+		case GSTDSP_HDH264VDEC:
+			base->alg = GSTDSP_H264DEC;
+			base->codec = &td_h264dec_codec;
+			break;
+		default:
+			break;
+		}
+	}
+
+	return true;
+}
+
+static void
+codec_fixup(GstDspVDec *self)
+{
+	GstDspBase *base = GST_DSP_BASE(self);
+
+	switch (base->alg) {
+	case GSTDSP_MPEG4VDEC:
+		if (self->width * self->height > 864 * 480) {
+			base->alg = GSTDSP_HDMPEG4VDEC;
+			base->codec = &td_hdmp4vdec_codec;
+		}
+		break;
+	case GSTDSP_H263DEC:
+		if (self->profile == 1) {
+			base->alg = GSTDSP_HDMPEG4VDEC;
+			base->codec = &td_hdmp4vdec_codec;
+		}
+		break;
+	default:
+		break;
+	}
+}
+
 static void *
 create_node(GstDspBase *base)
 {
@@ -168,19 +242,22 @@ create_node(GstDspBase *base)
 	}
 
 	/* codec fixups */
-	switch (base->alg) {
-	case GSTDSP_HDH264VDEC:
-		if (self->profile == 77 || self->profile == 100)
-			base->codec = &td_hdh264dec_hp_codec;
-		break;
-	case GSTDSP_MPEG4VDEC:
-		if (self->width * self->height > 864 * 480) {
-			base->alg = GSTDSP_HDMPEG4VDEC;
-			base->codec = &td_hdmp4vdec_codec;
+	if (!check_force_codec(self))
+		codec_fixup(self);
+
+	/* profile selection */
+	/* only if it hasn't been forced */
+	if (!base->codec) {
+		switch (base->alg) {
+		case GSTDSP_HDH264VDEC:
+			if (self->profile == 77 || self->profile == 100)
+				base->codec = &td_hdh264dec_hp_codec;
+			else
+				base->codec = &td_hdh264dec_bp_codec;
+			break;
+		default:
+			break;
 		}
-		break;
-	default:
-		break;
 	}
 
 	codec = base->codec;
@@ -466,7 +543,7 @@ sink_setcaps(GstPad *pad,
 		codec = &td_hdmp4vdec_codec;
 		break;
 	case GSTDSP_HDH264VDEC:
-		codec = &td_hdh264dec_bp_codec;
+		codec = NULL; /* should be selected by profile */
 		break;
 	default:
 		codec = NULL;
