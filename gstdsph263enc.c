@@ -92,6 +92,11 @@ base_init(gpointer g_class)
 {
 	GstElementClass *element_class;
 	GstPadTemplate *template;
+	const gint widths[] = { 352, 704, 176, 128 };
+	const gint heights[] = { 288, 576, 144, 96 };
+	GstCaps *temp, *templ, *caps;
+	gint i;
+	gint n_sizes = ARRAY_SIZE(widths);
 
 	element_class = GST_ELEMENT_CLASS(g_class);
 
@@ -107,6 +112,27 @@ base_init(gpointer g_class)
 
 	gst_element_class_add_pad_template(element_class, template);
 	gst_object_unref(template);
+
+	 /* no restrictions to indicate in this case */
+	if (!is_hd_codec())
+		return;
+
+	/* publicly announce specific P0 w/h restrictions */
+	template = gst_element_class_get_pad_template(element_class, "sink");
+	caps = gst_pad_template_get_caps(template);
+	templ = gst_caps_copy(caps);
+	while (!gst_caps_is_empty(caps))
+		gst_caps_remove_structure(caps, 0);
+
+	for (i = 0; i < n_sizes; i++) {
+		temp = gst_caps_copy(templ);
+		gst_caps_set_simple(temp,
+			"width", G_TYPE_INT, widths[i],
+			"height", G_TYPE_INT, heights[i],
+			NULL);
+		gst_caps_append(caps, temp);
+	}
+	gst_caps_unref(templ);
 }
 
 GType
