@@ -67,6 +67,52 @@ is_hd_codec()
 		return TRUE;
 }
 
+static GstCaps *
+sink_getcaps(GstPad *pad)
+{
+	GstDspBase *base = GST_DSP_BASE(GST_PAD_PARENT(pad));
+	GstCaps *tmpcaps = gst_caps_new_empty();
+	GstCaps *allowed_caps;
+	GstCaps *caps = NULL;
+	guint i;
+
+	allowed_caps = gst_pad_get_allowed_caps(base->srcpad);
+
+	if (!allowed_caps || gst_caps_is_any(allowed_caps))
+		return gst_caps_copy(gst_pad_get_pad_template_caps(pad));
+
+	if (gst_caps_is_empty(allowed_caps))
+		return allowed_caps;
+
+	for (i = 0; i < gst_caps_get_size(allowed_caps); i++) {
+		GstStructure *s = gst_caps_get_structure(allowed_caps, i);
+		const GValue *height = NULL;
+		const GValue *width = NULL;
+		const GValue *framerate = NULL;
+		GstStructure *tmps;
+
+		height = gst_structure_get_value(s, "height");
+		width = gst_structure_get_value(s, "width");
+		framerate = gst_structure_get_value(s, "framerate");
+
+		tmps = gst_structure_new("video/x-raw-yuv", NULL);
+		if (width)
+			gst_structure_set_value(tmps, "width", width);
+		if (height)
+			gst_structure_set_value(tmps, "height", height);
+		if (framerate)
+			gst_structure_set_value(tmps, "framerate", framerate);
+		gst_caps_merge_structure(tmpcaps, tmps);
+	}
+	gst_caps_unref(allowed_caps);
+
+	caps = gst_caps_intersect(tmpcaps, gst_pad_get_pad_template_caps(pad));
+
+	gst_caps_unref(tmpcaps);
+
+	return caps;
+}
+
 static void
 instance_init(GTypeInstance *instance,
 	      gpointer g_class)
@@ -85,6 +131,9 @@ instance_init(GTypeInstance *instance,
 
 	self->supported_levels = levels;
 	self->nr_supported_levels = ARRAY_SIZE(levels);
+
+	/* FIXME pretty generic, should work for venc */
+	gst_pad_set_getcaps_function(base->sinkpad, sink_getcaps);
 }
 
 static void
