@@ -16,6 +16,8 @@
 
 #include "log.h"
 
+#include <string.h>
+
 #define GST_CAT_DEFAULT gstdsp_debug
 
 #define td_mp4venc_codec td_fake_codec
@@ -53,6 +55,18 @@ generate_src_template(void)
 	return caps;
 }
 
+static inline gboolean
+is_hd_codec()
+{
+	const gchar *codec = g_getenv(CODEC_ENV_VAR);
+
+	/* default HD, otherwise as indicated by choice */
+	if (codec)
+		return (strcmp(codec, "HD") == 0);
+	else
+		return TRUE;
+}
+
 static void
 instance_init(GTypeInstance *instance,
 	      gpointer g_class)
@@ -60,8 +74,13 @@ instance_init(GTypeInstance *instance,
 	GstDspBase *base = GST_DSP_BASE(instance);
 	GstDspVEnc *self = GST_DSP_VENC(instance);
 
-	base->alg = GSTDSP_H263P0ENC;
-	base->codec = &td_hdmp4venc_codec;
+	if (is_hd_codec()) {
+		base->alg = GSTDSP_H263P0ENC;
+		base->codec = &td_hdmp4venc_codec;
+	} else {
+		base->alg = GSTDSP_H263ENC;
+		base->codec = &td_mp4venc_codec;
+	}
 	base->use_pinned = true;
 
 	self->supported_levels = levels;
