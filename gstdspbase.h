@@ -99,12 +99,14 @@ struct _GstDspBase {
 	guint ts_in_pos, ts_out_pos, ts_push_pos;
 	GMutex *ts_mutex;
 	gulong ts_count;
+	GstClockTime last_ts;
 	GstClockTime default_duration;
 	GSem *flush;
 	guint alg;
 
 	gboolean use_pad_alloc; /**< Use pad_alloc for output buffers. */
 	gboolean use_pinned; /**< Reuse output buffers. */
+	gboolean use_queued_ts;
 	guint dsp_error;
 
 	void *(*create_node)(GstDspBase *base);

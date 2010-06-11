@@ -90,6 +90,11 @@ static void out_recv_cb(GstDspBase *base, struct td_buffer *tb)
 	dmm_buffer_t *b = tb->data;
 	struct out_params *param;
 	param = tb->params->data;
+	if (base->use_queued_ts && G_LIKELY(tb->user_data)) {
+		GstBuffer *buffer = tb->user_data;
+		GST_BUFFER_TIMESTAMP(buffer) = base->ts_array[param->usr_arg].time;
+		GST_BUFFER_DURATION(buffer) = base->ts_array[param->usr_arg].duration;
+	}
 
 	if (param->error_code == -1) {
 		pr_err(base, "buffer error");
@@ -106,6 +111,7 @@ static void in_send_cb(GstDspBase *base, struct td_buffer *tb)
 {
 	struct in_params *param;
 	param = tb->params->data;
+	param->usr_arg = tb->data->ts_index;
 
 	param->frame_index = g_atomic_int_exchange_and_add(&param->frame_index, 1);
 }

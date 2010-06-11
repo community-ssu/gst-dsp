@@ -44,6 +44,7 @@ typedef struct {
 	bool need_copy;
 	int dir;
 	bool skip;
+	int ts_index;
 } dmm_buffer_t;
 
 static inline dmm_buffer_t *

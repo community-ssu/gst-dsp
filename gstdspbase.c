@@ -441,6 +441,8 @@ output_loop(gpointer data)
 		self->ts_out_pos = (self->ts_out_pos + 1) % ARRAY_SIZE(self->ts_array);
 		if (G_LIKELY(!flush_buffer)) {
 			self->ts_push_pos = self->ts_out_pos;
+			if (GST_EVENT_TYPE(event) == GST_EVENT_NEWSEGMENT)
+				self->last_ts = GST_CLOCK_TIME_NONE;
 			pr_debug(self, "pushing event: %s", GST_EVENT_TYPE_NAME(event));
 			gst_pad_push_event(self->srcpad, event);
 		} else {
@@ -543,8 +545,10 @@ output_loop(gpointer data)
 		GST_BUFFER_FLAGS(out_buf) |= GST_BUFFER_FLAG_DELTA_UNIT;
 
 	g_mutex_lock(self->ts_mutex);
-	timestamp = self->ts_array[self->ts_out_pos].time;
-	duration = self->ts_array[self->ts_out_pos].duration;
+	if (!self->use_queued_ts) {
+		timestamp = self->ts_array[self->ts_out_pos].time;
+		duration = self->ts_array[self->ts_out_pos].duration;
+	}
 	self->ts_out_pos = (self->ts_out_pos + 1) % ARRAY_SIZE(self->ts_array);
 	self->ts_push_pos = self->ts_out_pos;
 	self->ts_count--;
@@ -1092,6 +1096,7 @@ change_state(GstElement *element,
 		async_queue_enable(self->ports[1]->queue);
 		self->deferred_eos = false;
 		self->eos = false;
+		self->last_ts = GST_CLOCK_TIME_NONE;
 		break;
 
 	case GST_STATE_CHANGE_PAUSED_TO_READY:
@@ -1327,6 +1332,20 @@ pad_chain(GstPad *pad,
 		}
 	}
 
+	/*
+	 * Check a few timestamps to see if we are dealing with PTS or DTS in order to
+	 * activate the reordering logic or not.
+	 */
+	if (!self->use_queued_ts) {
+		if (GST_CLOCK_TIME_IS_VALID(self->last_ts) &&
+				GST_BUFFER_TIMESTAMP_IS_VALID(buf) &&
+				self->last_ts > GST_BUFFER_TIMESTAMP(buf))
+		{
+			self->use_queued_ts = TRUE;
+		}
+		self->last_ts = GST_BUFFER_TIMESTAMP(buf);
+	}
+
 	tb = async_queue_pop(p->queue);
 
 	ret = g_atomic_int_get(&self->status);
@@ -1354,6 +1373,7 @@ pad_chain(GstPad *pad,
 	g_mutex_lock(self->ts_mutex);
 	self->ts_array[self->ts_in_pos].time = GST_BUFFER_TIMESTAMP(buf);
 	self->ts_array[self->ts_in_pos].duration = GST_BUFFER_DURATION(buf);
+	b->ts_index = self->ts_in_pos;
 	self->ts_in_pos = (self->ts_in_pos + 1) % ARRAY_SIZE(self->ts_array);
 	self->ts_count++;
 	g_mutex_unlock(self->ts_mutex);
@@ -1427,6 +1447,7 @@ sink_event(GstDspBase *self,
 		async_queue_enable(self->ports[0]->queue);
 		async_queue_enable(self->ports[1]->queue);
 
+		self->last_ts = GST_CLOCK_TIME_NONE;
 		gst_pad_start_task(self->srcpad, output_loop, self->srcpad);
 		break;
 
