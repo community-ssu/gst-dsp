@@ -151,6 +151,7 @@ struct in_params {
 	uint32_t slice_group_change_cycle;
 	uint32_t slice_group_params[8]; /* MAXNUMSLCGPS = 8 */
 
+	uint32_t max_delay;
 	uint32_t frame_index;
 };
 
@@ -335,6 +336,11 @@ static void setup_in_params(GstDspBase *base, dmm_buffer_t *tmp)
 	in_param->max_bytes_per_slice = 327680;
 	in_param->max_mv_per_mb = 4;
 	in_param->intra_4x4_enable_idc = 2;
+
+	if (self->mode == 1) {
+		/* Max delay in CBR, unit is 1/30th of a second */
+		in_param->max_delay = 6; /* 200ms */
+	}
 
 	if (self->intra_refresh) {
 		unsigned pixels;
