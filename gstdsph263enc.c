@@ -178,6 +178,7 @@ base_init(gpointer g_class)
 		gst_caps_set_simple(temp,
 			"width", G_TYPE_INT, widths[i],
 			"height", G_TYPE_INT, heights[i],
+			"pixel-aspect-ratio", GST_TYPE_FRACTION, 12, 11,
 			NULL);
 		gst_caps_append(caps, temp);
 	}
