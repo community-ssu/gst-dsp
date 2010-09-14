@@ -49,6 +49,14 @@ get_elapsed_eos(GstDspBase *self)
 	return elapsed;
 }
 
+static inline void
+check_elapsed(GstDspBase *self)
+{
+	long elapsed = get_elapsed_eos(self);
+	if (elapsed > 500)
+		pr_warning(self, "eos took %lu ms", elapsed);
+}
+
 du_port_t *
 du_port_new(int id,
 	    int dir)
@@ -341,6 +349,7 @@ pause_task(GstDspBase *self, GstFlowReturn status)
 	/* there's a pending deferred EOS, it's now or never */
 	if (deferred_eos) {
 		pr_info(self, "send elapsed eos");
+		check_elapsed(self);
 		self->eos_start.tv_sec = self->eos_start.tv_nsec = 0;
 		gst_pad_push_event(self->srcpad, gst_event_new_eos());
 		g_atomic_int_set(&self->eos, true);
@@ -546,6 +555,7 @@ leave:
 	handled = tb->pinned && out_buf;
 	if (G_UNLIKELY(got_eos)) {
 		pr_info(self, "got eos");
+		check_elapsed(self);
 		self->eos_start.tv_sec = self->eos_start.tv_nsec = 0;
 		gst_pad_push_event(self->srcpad, gst_event_new_eos());
 		g_atomic_int_set(&self->eos, true);
