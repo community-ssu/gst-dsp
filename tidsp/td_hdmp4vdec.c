@@ -90,7 +90,7 @@ static void out_recv_cb(GstDspBase *base, struct td_buffer *tb)
 	dmm_buffer_t *b = tb->data;
 	struct out_params *param;
 	param = tb->params->data;
-	if (base->use_queued_ts && G_LIKELY(tb->user_data)) {
+	if (G_LIKELY(tb->user_data)) {
 		GstBuffer *buffer = tb->user_data;
 		GST_BUFFER_TIMESTAMP(buffer) = base->ts_array[param->usr_arg].time;
 		GST_BUFFER_DURATION(buffer) = base->ts_array[param->usr_arg].duration;
@@ -138,4 +138,5 @@ struct td_codec td_hdmp4vdec_codec = {
 	.setup_params = setup_params,
 	.create_args = create_args,
 	.flush_buffer = gstdsp_base_flush_buffer,
+	.ts_mode = TS_MODE_CHECK_IN,
 };

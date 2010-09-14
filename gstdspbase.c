@@ -242,6 +242,10 @@ got_message(GstDspBase *self,
 		if (param)
 			dmm_buffer_end(param, param->size);
 
+		/* clear time so sn might set its own */
+		if (id != 0 && tb->user_data)
+			GST_BUFFER_TIMESTAMP(tb->user_data) = GST_CLOCK_TIME_NONE;
+
 		if (p->recv_cb)
 			p->recv_cb(self, tb);
 
@@ -376,6 +380,48 @@ check_status(GstDspBase *self)
 	return ret;
 }
 
+/* determine timestamp/duration for @out_buf using input @timestamp and @duration */
+static void
+do_timestamp(GstDspBase *self, GstBuffer *out_buf, GstClockTime timestamp, GstClockTime duration)
+{
+	/* timestamp checking and heuristics */
+	switch (g_atomic_int_get(&self->ts_mode)) {
+	case TS_MODE_CHECK_OUT:
+		/* maybe SN provided a valid one, fall-back to in ts otherwise */
+		if (GST_BUFFER_TIMESTAMP_IS_VALID(out_buf)) {
+			timestamp = GST_BUFFER_TIMESTAMP(out_buf);
+			duration = GST_BUFFER_DURATION(out_buf);
+			pr_debug(self, "SN ts %" GST_TIME_FORMAT, GST_TIME_ARGS(timestamp));
+		}
+		if (GST_CLOCK_TIME_IS_VALID(self->last_ts) && GST_CLOCK_TIME_IS_VALID(timestamp) &&
+				self->last_ts > timestamp) {
+			pr_debug(self, "SN ts out-of-order -> interpolate");
+			g_atomic_int_set(&self->ts_mode, TS_MODE_INTERPOLATE);
+			self->next_ts = GST_CLOCK_TIME_NONE;
+		}
+		self->last_ts = timestamp;
+		break;
+	case TS_MODE_INTERPOLATE: {
+		gboolean keyframe = !GST_BUFFER_FLAG_IS_SET(out_buf, GST_BUFFER_FLAG_DELTA_UNIT);
+
+		pr_debug(self, "interpolate: keyframe %d, next_ts %" GST_TIME_FORMAT,
+				keyframe, GST_TIME_ARGS(self->next_ts));
+		if (G_LIKELY(!keyframe && GST_CLOCK_TIME_IS_VALID(self->next_ts))) {
+			pr_debug(self, "not keyframe: using interpolated ts");
+			timestamp = self->next_ts;
+		}
+		if (G_LIKELY(GST_CLOCK_TIME_IS_VALID(duration) && GST_CLOCK_TIME_IS_VALID(timestamp)))
+			self->next_ts = timestamp + duration;
+		break;
+	}
+	default:
+		break;
+	}
+
+	GST_BUFFER_TIMESTAMP(out_buf) = timestamp;
+	GST_BUFFER_DURATION(out_buf) = duration;
+}
+
 static void
 output_loop(gpointer data)
 {
@@ -441,8 +487,10 @@ output_loop(gpointer data)
 		self->ts_out_pos = (self->ts_out_pos + 1) % ARRAY_SIZE(self->ts_array);
 		if (G_LIKELY(!flush_buffer)) {
 			self->ts_push_pos = self->ts_out_pos;
-			if (GST_EVENT_TYPE(event) == GST_EVENT_NEWSEGMENT)
+			if (GST_EVENT_TYPE(event) == GST_EVENT_NEWSEGMENT) {
 				self->last_ts = GST_CLOCK_TIME_NONE;
+				self->next_ts = GST_CLOCK_TIME_NONE;
+			}
 			pr_debug(self, "pushing event: %s", GST_EVENT_TYPE_NAME(event));
 			gst_pad_push_event(self->srcpad, event);
 		} else {
@@ -545,10 +593,9 @@ output_loop(gpointer data)
 		GST_BUFFER_FLAGS(out_buf) |= GST_BUFFER_FLAG_DELTA_UNIT;
 
 	g_mutex_lock(self->ts_mutex);
-	if (!self->use_queued_ts) {
-		timestamp = self->ts_array[self->ts_out_pos].time;
-		duration = self->ts_array[self->ts_out_pos].duration;
-	}
+	timestamp = self->ts_array[self->ts_out_pos].time;
+	duration = self->ts_array[self->ts_out_pos].duration;
+	pr_debug(self, "in ts %" GST_TIME_FORMAT, GST_TIME_ARGS(timestamp));
 	self->ts_out_pos = (self->ts_out_pos + 1) % ARRAY_SIZE(self->ts_array);
 	self->ts_push_pos = self->ts_out_pos;
 	self->ts_count--;
@@ -568,8 +615,7 @@ output_loop(gpointer data)
 	else if (GST_CLOCK_TIME_IS_VALID(duration) && !self->default_duration)
 		self->default_duration = duration;
 
-	GST_BUFFER_TIMESTAMP(out_buf) = timestamp;
-	GST_BUFFER_DURATION(out_buf) = duration;
+	do_timestamp(self, out_buf, timestamp, duration);
 
 	pr_debug(self, "pushing buffer %" GST_TIME_FORMAT,
 		 GST_TIME_ARGS(GST_BUFFER_TIMESTAMP(out_buf)));
@@ -1336,16 +1382,20 @@ pad_chain(GstPad *pad,
 	 * Check a few timestamps to see if we are dealing with PTS or DTS in order to
 	 * activate the reordering logic or not.
 	 */
-	if (!self->use_queued_ts) {
+	if (self->ts_mode == TS_MODE_CHECK_IN) {
 		if (GST_CLOCK_TIME_IS_VALID(self->last_ts) &&
 				GST_BUFFER_TIMESTAMP_IS_VALID(buf) &&
 				self->last_ts > GST_BUFFER_TIMESTAMP(buf))
 		{
-			self->use_queued_ts = TRUE;
+			pr_debug(self, "in ts out-of-order -> sn ts");
+			self->last_ts = GST_CLOCK_TIME_NONE;
+			g_atomic_int_set(&self->ts_mode, TS_MODE_CHECK_OUT);
+			goto next;
 		}
 		self->last_ts = GST_BUFFER_TIMESTAMP(buf);
 	}
 
+next:
 	tb = async_queue_pop(p->queue);
 
 	ret = g_atomic_int_get(&self->status);
@@ -1448,6 +1498,7 @@ sink_event(GstDspBase *self,
 		async_queue_enable(self->ports[1]->queue);
 
 		self->last_ts = GST_CLOCK_TIME_NONE;
+		self->next_ts = GST_CLOCK_TIME_NONE;
 		gst_pad_start_task(self->srcpad, output_loop, self->srcpad);
 		break;
 
@@ -1530,6 +1581,7 @@ instance_init(GTypeInstance *instance,
 
 	self->ports[0] = du_port_new(0, DMA_TO_DEVICE);
 	self->ports[1] = du_port_new(1, DMA_FROM_DEVICE);
+	self->ts_mode = TS_MODE_PASS;
 
 	self->got_message = got_message;
 	self->send_buffer = send_buffer;

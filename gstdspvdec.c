@@ -234,6 +234,7 @@ create_node(GstDspBase *base)
 		codec->send_params(base, node);
 
 	base->flush_buffer = codec->flush_buffer;
+	base->ts_mode = codec->ts_mode;
 
 	return node;
 }

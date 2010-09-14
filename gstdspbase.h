@@ -56,6 +56,13 @@ struct du_port_t {
 	int dir;
 };
 
+enum ts_mode {
+	TS_MODE_PASS, /* copy input ts to output */
+	TS_MODE_CHECK_IN, /* as above, but check if ascending, or below... */
+	TS_MODE_CHECK_OUT, /* use ts as provided by socket node, and it not ascending... */
+	TS_MODE_INTERPOLATE, /* use input ts for keyframes, interpolate for other */
+};
+
 struct td_codec {
 	const struct dsp_uuid *uuid;
 	const char *filename;
@@ -66,6 +73,7 @@ struct td_codec {
 	void (*send_params)(GstDspBase *base, struct dsp_node *node);
 	void (*update_params) (GstDspBase *base, struct dsp_node *node, uint32_t msg);
 	unsigned (*get_latency)(GstDspBase *base, unsigned frame_duration);
+	enum ts_mode ts_mode;
 };
 
 struct ts_item {
@@ -99,14 +107,14 @@ struct _GstDspBase {
 	guint ts_in_pos, ts_out_pos, ts_push_pos;
 	GMutex *ts_mutex;
 	gulong ts_count;
-	GstClockTime last_ts;
+	GstClockTime last_ts, next_ts;
+	enum ts_mode ts_mode;
 	GstClockTime default_duration;
 	GSem *flush;
 	guint alg;
 
 	gboolean use_pad_alloc; /**< Use pad_alloc for output buffers. */
 	gboolean use_pinned; /**< Reuse output buffers. */
-	gboolean use_queued_ts;
 	guint dsp_error;
 
 	void *(*create_node)(GstDspBase *base);
