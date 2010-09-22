@@ -18,6 +18,8 @@
 
 #define GST_CAT_DEFAULT gstdsp_debug
 
+#define td_mp4venc_codec td_fake_codec
+
 /*
  * H.263 supported levels
  * source: http://www.itu.int/rec/T-REC-H.263/  , page 208- table of levels.
