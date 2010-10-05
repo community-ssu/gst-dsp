@@ -725,11 +725,7 @@ dsp_init(GstDspBase *self)
 	return TRUE;
 
 fail:
-	if (self->proc) {
-		if (!dsp_detach(dsp_handle, self->proc))
-			pr_err(self, "dsp detach failed");
-		self->proc = NULL;
-	}
+	self->proc = NULL;
 
 	if (self->dsp_handle >= 0) {
 		if (dsp_close(dsp_handle) < 0)
@@ -748,15 +744,8 @@ dsp_deinit(GstDspBase *self)
 	if (self->dsp_error)
 		goto leave;
 
-	if (self->proc) {
-		if (!dsp_detach(self->dsp_handle, self->proc)) {
-			pr_err(self, "dsp detach failed");
-			ret = FALSE;
-		}
-		self->proc = NULL;
-	}
-
 leave:
+	self->proc = NULL;
 
 	if (self->dsp_handle >= 0) {
 		if (dsp_close(self->dsp_handle) < 0) {
