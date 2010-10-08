@@ -14,6 +14,8 @@
 #include "gstdspvdec.h"
 #include "gstdspparse.h"
 
+#include "td_hdcodec.h"
+
 struct create_args {
 	uint32_t size;
 	uint16_t num_streams;
@@ -154,10 +156,7 @@ static void out_recv_cb(GstDspBase *base, struct td_buffer *tb)
 		GST_BUFFER_DURATION(buffer) = base->ts_array[param->usr_arg].duration;
 	}
 
-	if (param->error_code == -1) {
-		pr_err(base, "buffer error");
-		g_atomic_int_set(&base->status, GST_FLOW_ERROR);
-	}
+	handle_hdcodec_error(base, param->error_code, param->ext_error_code);
 
 	if (G_UNLIKELY(param->skip_frame))
 		b->skip = TRUE;

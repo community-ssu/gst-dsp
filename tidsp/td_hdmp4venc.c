@@ -182,6 +182,11 @@ static void out_recv_cb(GstDspBase *base, struct td_buffer *tb)
 	dmm_buffer_t *b = tb->data;
 	struct out_params *param;
 	param = tb->params->data;
+	if (XDM_ERROR_IS_FATAL(param->ext_error_code)) {
+		pr_err(base, "invalid i/p params or insufficient o/p buf size");
+		g_atomic_int_set(&base->status, GST_FLOW_ERROR);
+	}
+
 	tb->keyframe = (param->frame_type == 1);
 	if (base->alg == GSTDSP_HDMP4VENC)
 		td_mp4venc_try_extract_extra_data(base, b);
