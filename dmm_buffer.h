@@ -43,6 +43,7 @@ typedef struct {
 	void *map;
 	bool need_copy;
 	int dir;
+	bool skip;
 } dmm_buffer_t;
 
 static inline dmm_buffer_t *
