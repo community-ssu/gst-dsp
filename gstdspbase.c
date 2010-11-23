@@ -467,6 +467,8 @@ output_loop(gpointer data)
 			self->ts_count--;
 			if (G_LIKELY(!flush_buffer))
 				self->ts_push_pos = self->ts_out_pos;
+			if (G_UNLIKELY(g_atomic_int_get(&self->deferred_eos)) && self->ts_count == 0)
+				got_eos = TRUE;
 			g_mutex_unlock(self->ts_mutex);
 		}
 		/* no real frame data, so no need to consume a real frame's ts */
@@ -483,6 +485,8 @@ output_loop(gpointer data)
 			 GST_TIME_ARGS((self->ts_array[self->ts_out_pos].time)));
 		self->ts_count--;
 		self->ts_out_pos = (self->ts_out_pos + 1) % ARRAY_SIZE(self->ts_array);
+		if (G_UNLIKELY(g_atomic_int_get(&self->deferred_eos)) && self->ts_count == 0)
+			got_eos = TRUE;
 		g_mutex_unlock(self->ts_mutex);
 		goto leave;
 	}
