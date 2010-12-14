@@ -25,6 +25,8 @@
 
 static GstDspBaseClass *parent_class;
 
+#define td_jpegdec_codec td_fake_codec
+
 static inline GstCaps *
 generate_sink_template(void)
 {
@@ -69,12 +71,6 @@ generate_sink_template(void)
 
 	struc = gst_structure_new("video/x-wmv",
 				  "wmvversion", G_TYPE_INT, 3,
-				  NULL);
-
-	gst_caps_append_structure(caps, struc);
-
-	struc = gst_structure_new("image/jpeg",
-				  "parsed", G_TYPE_BOOLEAN, TRUE,
 				  NULL);
 
 	gst_caps_append_structure(caps, struc);
