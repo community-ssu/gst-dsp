@@ -123,6 +123,7 @@ struct _GstDspBase {
 
 	GstBuffer *codec_data;
 	bool parsed;
+	bool busy;
 
 	/* hacks */
 	guint skip_hack; /* don't push x number of buffers */

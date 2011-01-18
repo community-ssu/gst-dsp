@@ -673,6 +673,7 @@ dsp_thread(gpointer data)
 			} else if (errno == EBUSY) {
 				pr_info(self, "preempted");
 				dsp_error = GSTDSP_ERROR_BUSY;
+				self->busy = true;
 			}
 			pr_err(self, "failed waiting for events: %i", errno);
 			gstdsp_got_error(self, dsp_error, "unable to get event");
@@ -861,7 +862,7 @@ static bool
 send_stop_message(GstDspBase *self)
 {
 	if (dsp_send_message(self->dsp_handle, self->node, 0x0200, 0, 0))
-		if (!g_sem_down_timed(self->flush, 2))
+		if (!self->busy && !g_sem_down_timed(self->flush, 2))
 			pr_warning(self, "timed out waiting for DSP STOP");
 	/** @todo find a way to stop wait_for_events */
 	return true;
