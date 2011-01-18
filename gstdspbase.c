@@ -655,6 +655,8 @@ dsp_thread(gpointer data)
 					async_queue_disable(self->ports[1]->queue);
 				}
 				continue;
+			} else if (errno == EBUSY) {
+				pr_info(self, "preempted");
 			}
 			pr_err(self, "failed waiting for events: %i", errno);
 			gstdsp_got_error(self, -1, "unable to get event");
