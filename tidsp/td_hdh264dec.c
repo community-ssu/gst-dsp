@@ -143,6 +143,8 @@ struct out_params {
 	uint32_t usr_arg;
 	int32_t skip_frame;
 	int32_t ext_error_code;
+	uint8_t mb_err_status[3600];
+	uint32_t num_of_mbs;
 };
 
 static void out_recv_cb(GstDspBase *base, struct td_buffer *tb)
@@ -157,6 +159,23 @@ static void out_recv_cb(GstDspBase *base, struct td_buffer *tb)
 	}
 
 	handle_hdcodec_error(base, param->error_code, param->ext_error_code);
+
+	if (XDM_ERROR_IS_APPLIEDCONCEALMENT(param->ext_error_code) && param->num_of_mbs) {
+		unsigned int i = 0, conceal = 0, start_mb = 0;
+		for (; i < param->num_of_mbs; i++) {
+			if (param->mb_err_status[i]) {
+				if (!start_mb && !conceal)
+					start_mb = i;
+				conceal++;
+			}
+			else {
+				if (conceal && !param->mb_err_status[i])
+					break;
+				continue;
+			}
+		}
+		pr_debug(base, "start-mb %d with total consecutive conclealed mbs %d", start_mb, conceal);
+	}
 
 	if (G_UNLIKELY(param->skip_frame))
 		b->skip = TRUE;
