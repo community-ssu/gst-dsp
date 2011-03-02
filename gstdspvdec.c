@@ -437,6 +437,36 @@ skip_setup:
 	return TRUE;
 }
 
+static gboolean
+src_event(GstDspBase *self,
+GstEvent *event)
+{
+	gboolean ret = TRUE;
+
+	switch (GST_EVENT_TYPE(event)) {
+	case GST_EVENT_QOS:
+	{
+		gdouble proportion;
+		GstClockTimeDiff jitter;
+		GstClockTime timestamp;
+
+		gst_event_parse_qos(event, &proportion, &jitter, &timestamp);
+		if (G_UNLIKELY(jitter > 0) || (jitter > (GstClockTimeDiff)self->default_duration))
+			g_atomic_int_set(&self->qos, true);
+		else
+			g_atomic_int_set(&self->qos, false);
+
+		ret = gst_pad_push_event(self->sinkpad, event);
+		break;
+	}
+	default:
+		ret = gst_pad_push_event(self->sinkpad, event);
+		break;
+	}
+
+	return ret;
+}
+
 static void
 instance_init(GTypeInstance *instance,
 	      gpointer g_class)
@@ -484,7 +514,11 @@ static void
 class_init(gpointer g_class,
 	   gpointer class_data)
 {
+	GstDspBaseClass *class;
+	class = GST_DSP_BASE_CLASS(g_class);
+
 	parent_class = g_type_class_peek_parent(g_class);
+	class->src_event = src_event;
 }
 
 GType

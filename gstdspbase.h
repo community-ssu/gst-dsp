@@ -120,6 +120,7 @@ struct _GstDspBase {
 
 	struct timespec eos_start;
 	gint eos_timeout; /* how much to wait for the EOS from DSP (ms) */
+	int qos;
 
 	GstBuffer *codec_data;
 	bool parsed;
