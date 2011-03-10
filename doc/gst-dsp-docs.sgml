@@ -19,6 +19,7 @@
     <xi:include href="xml/element-dspipp.xml"/>
     <xi:include href="xml/element-dspdummy.xml"/>
     <xi:include href="xml/element-dspvpp.xml"/>
+    <xi:include href="xml/element-dsphdh264enc.xml"/>
   </chapter>
 
   <chapter id="base">

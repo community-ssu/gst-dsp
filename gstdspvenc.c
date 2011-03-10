@@ -287,6 +287,7 @@ sink_setcaps(GstPad *pad,
 					      NULL);
 		break;
 	case GSTDSP_H264ENC:
+	case GSTDSP_HDH264ENC:
 		out_struc = gst_structure_new("video/x-h264",
 					      "alignment", G_TYPE_STRING, "au",
 					      NULL);
@@ -333,6 +334,7 @@ sink_setcaps(GstPad *pad,
 		du_port_alloc_buffers(base->ports[1], 2);
 		break;
 	case GSTDSP_HDMP4VENC:
+	case GSTDSP_HDH264ENC:
 		du_port_alloc_buffers(base->ports[0], 6);
 		du_port_alloc_buffers(base->ports[1], 8);
 		break;
@@ -364,7 +366,7 @@ skip_setup:
 			GstStructure *s;
 			s = gst_caps_get_structure(allowed_caps, 0);
 			gst_structure_get_int(s, "level", &tgt_level);
-			if (base->alg == GSTDSP_H264ENC) {
+			if (base->alg == GSTDSP_H264ENC || base->alg == GSTDSP_HDH264ENC) {
 				const char *stream_format;
 				stream_format = gst_structure_get_string(s, "stream-format");
 				if (stream_format && !strcmp(stream_format, "avc"))
@@ -570,7 +572,7 @@ reset(GstDspBase *base)
 	pr_debug(self, "venc reset");
 
 	/* some cleanup */
-	if (base->alg == GSTDSP_H264ENC) {
+	if (base->alg == GSTDSP_H264ENC || base->alg == GSTDSP_HDH264ENC) {
 		self->priv.h264.codec_data_done = FALSE;
 		self->priv.h264.sps_received = FALSE;
 		self->priv.h264.pps_received = FALSE;

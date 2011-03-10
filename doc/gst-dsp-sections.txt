@@ -155,3 +155,15 @@ GST_DSP_VPP_CLASS
 GstDspVppClass
 gst_dsp_vpp_get_type
 </SECTION>
+
+<SECTION>
+<FILE>element-dsphdh264enc</FILE>
+<TITLE>dsphdh264enc</TITLE>
+GstDspHdH264Enc
+<SUBSECTION Standard>
+GST_DSP_HD_H264ENC
+GST_DSP_HD_H264ENC_TYPE
+GST_DSP_HD_H264ENC_CLASS
+GstDspHdH264EncClass
+gst_dsp_hd_h264enc_get_type
+</SECTION>

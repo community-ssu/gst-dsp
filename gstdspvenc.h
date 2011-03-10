@@ -48,6 +48,7 @@ enum {
 	GSTDSP_H263ENC,
 	GSTDSP_MP4VENC,
 	GSTDSP_H264ENC,
+	GSTDSP_HDH264ENC,
 	GSTDSP_HDMP4VENC,
 	GSTDSP_H263P0ENC,
 };
@@ -72,6 +73,7 @@ struct _GstDspVEnc {
 	gboolean intra_refresh;
 	bool intra_refresh_set;
 	gint level;
+	guint gob_length;
 };
 
 struct _GstDspVEncClass {
