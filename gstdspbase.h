@@ -138,6 +138,7 @@ struct _GstDspBase {
 	bool (*send_play_message)(GstDspBase *self);
 	bool (*send_stop_message)(GstDspBase *self);
 	GstCaps *tmp_caps;
+	GstSegment segment;
 
 	struct timespec eos_start;
 	gint eos_timeout; /* how much to wait for the EOS from DSP (ms) */

@@ -18,6 +18,8 @@ G_BEGIN_DECLS
 #define GST_DSP_VDEC(obj) (GstDspVDec *)(obj)
 #define GST_DSP_VDEC_TYPE (gst_dsp_vdec_get_type())
 #define GST_DSP_VDEC_CLASS(obj) (GstDspVDecClass *)(obj)
+#define GST_IS_DSP_VDEC(obj) \
+  (G_TYPE_CHECK_INSTANCE_TYPE((obj), gst_dsp_vdec_get_type()))
 
 typedef struct _GstDspVDec GstDspVDec;
 typedef struct _GstDspVDecClass GstDspVDecClass;

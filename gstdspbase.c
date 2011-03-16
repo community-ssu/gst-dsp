@@ -9,6 +9,7 @@
  */
 
 #include "gstdspbase.h"
+#include "gstdspvdec.h"
 #include "gstdspbuffer.h"
 #include "plugin.h"
 
@@ -422,6 +423,98 @@ do_timestamp(GstDspBase *self, GstBuffer *out_buf, GstClockTime timestamp, GstCl
 	GST_BUFFER_DURATION(out_buf) = duration;
 }
 
+/* to be called with ts_lock */
+static GstFlowReturn
+process_event(GstDspBase *self, GstEvent *event, gboolean *drop)
+{
+	GstFlowReturn ret = GST_FLOW_OK;
+
+	*drop = FALSE;
+	switch (GST_EVENT_TYPE(event)) {
+	case GST_EVENT_NEWSEGMENT:
+	{
+		GstFormat format;
+		gdouble rate, arate;
+		gint64 start, stop, time;
+		gboolean update;
+		GstSegment segment;
+
+		gst_segment_init(&segment, GST_FORMAT_UNDEFINED);
+		gst_event_parse_new_segment_full(event, &update, &rate, &arate, &format,
+				&start, &stop, &time);
+		gst_segment_set_newsegment_full(&segment, update, rate, arate, format,
+				start, stop, time);
+		GST_DEBUG_OBJECT(self, "applying format %d newsegment %" GST_SEGMENT_FORMAT, format,
+				&segment);
+		/* avoid (unlikely) format complaints */
+		if (format != self->segment.format)
+			gst_segment_init(&self->segment, GST_FORMAT_UNDEFINED);
+		gst_segment_set_newsegment_full(&self->segment, update, rate, arate,
+				format, start, stop, time);
+		break;
+	}
+	default:
+		break;
+	}
+
+	return ret;
+}
+
+/* some typical familiar code ... */
+/* returns TRUE if buffer is within segment, else FALSE.
+ * if Buffer is on segment border, it's timestamp and duration will be clipped */
+static gboolean
+clip_video_buffer(GstDspBase *self, GstBuffer *buf)
+{
+	gboolean res = TRUE;
+	gint64 cstart, cstop;
+	GstClockTime stop, in_ts, in_dur;
+
+	in_ts = GST_BUFFER_TIMESTAMP(buf);
+	in_dur = GST_BUFFER_DURATION(buf);
+
+	GST_LOG_OBJECT(self,
+			"timestamp:%" GST_TIME_FORMAT " , duration:%" GST_TIME_FORMAT,
+			GST_TIME_ARGS(in_ts), GST_TIME_ARGS(in_dur));
+
+	/* can't clip without TIME segment */
+	if (G_UNLIKELY(self->segment.format != GST_FORMAT_TIME))
+		goto exit;
+
+	/* we need a start time */
+	if (G_UNLIKELY(!GST_CLOCK_TIME_IS_VALID(in_ts)))
+		goto exit;
+
+	/* generate valid stop, if duration unknown, we have unknown stop */
+	stop = GST_CLOCK_TIME_IS_VALID(in_dur) ?
+		(in_ts + in_dur) : GST_CLOCK_TIME_NONE;
+
+	/* now clip */
+	res = gst_segment_clip(&self->segment, GST_FORMAT_TIME, in_ts, stop,
+				&cstart, &cstop);
+	if (G_UNLIKELY(!res))
+		goto exit;
+
+	/* we're pretty sure the duration of this buffer is not till the end of this
+	 * segment (which _clip will assume when the stop is -1) */
+	if (stop == GST_CLOCK_TIME_NONE)
+		cstop = GST_CLOCK_TIME_NONE;
+
+	/* update timestamp and possibly duration if the clipped stop time is
+	 * valid */
+	GST_BUFFER_TIMESTAMP(buf) = cstart;
+	if (GST_CLOCK_TIME_IS_VALID(cstop))
+		GST_BUFFER_DURATION(buf) = cstop - cstart;
+
+	GST_LOG_OBJECT(self,
+			"clipped timestamp:%" GST_TIME_FORMAT " , duration:%" GST_TIME_FORMAT,
+			GST_TIME_ARGS(cstart), GST_TIME_ARGS(GST_BUFFER_DURATION(buf)));
+
+exit:
+	GST_LOG_OBJECT(self, "%sdropping", (res ? "not " : ""));
+	return res;
+}
+
 static void
 output_loop(gpointer data)
 {
@@ -482,23 +575,33 @@ output_loop(gpointer data)
 	/* first clear pending events */
 	g_mutex_lock(self->ts_mutex);
 	while ((event = self->ts_array[self->ts_out_pos].event)) {
+		gboolean drop;
+
 		self->ts_array[self->ts_out_pos].event = NULL;
 		flush_buffer = (self->ts_out_pos != self->ts_push_pos);
 		self->ts_out_pos = (self->ts_out_pos + 1) % ARRAY_SIZE(self->ts_array);
 		if (G_LIKELY(!flush_buffer)) {
+			ret = process_event(self, event, &drop);
 			self->ts_push_pos = self->ts_out_pos;
 			if (GST_EVENT_TYPE(event) == GST_EVENT_NEWSEGMENT) {
 				self->last_ts = GST_CLOCK_TIME_NONE;
 				self->next_ts = GST_CLOCK_TIME_NONE;
 			}
-			pr_debug(self, "pushing event: %s", GST_EVENT_TYPE_NAME(event));
-			gst_pad_push_event(self->srcpad, event);
+			if (G_UNLIKELY(drop)) {
+				pr_debug(self, "dropping event: %s", GST_EVENT_TYPE_NAME(event));
+				gst_event_unref(event);
+			} else {
+				pr_debug(self, "pushing event: %s", GST_EVENT_TYPE_NAME(event));
+				gst_pad_push_event(self->srcpad, event);
+			}
 		} else {
 			pr_debug(self, "ignored flushed event: %s", GST_EVENT_TYPE_NAME(event));
 			gst_event_unref(event);
 		}
 	}
 	g_mutex_unlock(self->ts_mutex);
+	if (G_UNLIKELY(ret != GST_FLOW_OK))
+		goto leave;
 
 	/* a pending reallocation from the previous run */
 	if (G_UNLIKELY(!b->data)) {
@@ -617,6 +720,13 @@ output_loop(gpointer data)
 
 	do_timestamp(self, out_buf, timestamp, duration);
 
+	/* segment clipping */
+	if (GST_IS_DSP_VDEC(self)) {
+		if (G_UNLIKELY(!clip_video_buffer(self, out_buf))) {
+			gst_buffer_unref(out_buf);
+			goto leave;
+		}
+	}
 	pr_debug(self, "pushing buffer %" GST_TIME_FORMAT,
 		 GST_TIME_ARGS(GST_BUFFER_TIMESTAMP(out_buf)));
 	ret = gst_pad_push(self->srcpad, out_buf);
@@ -1609,6 +1719,8 @@ instance_init(GTypeInstance *instance,
 
 	self->flush = g_sem_new(0);
 	self->eos_timeout = 1000;
+
+	gst_segment_init(&self->segment, GST_FORMAT_UNDEFINED);
 }
 
 static void
