@@ -20,6 +20,7 @@ struct _GstDspBuffer {
 	GstBuffer parent;
 	GstDspBase *base;
 	struct td_buffer *tb;
+	gint cookie;
 };
 
 struct _GstDspBufferClass {
@@ -41,7 +42,10 @@ GstBuffer *gst_dsp_buffer_new(GstDspBase *base, struct td_buffer *tb)
 	GST_BUFFER_SIZE(buf) = b->len;
 	dsp_buf = (GstDspBuffer *) buf;
 	dsp_buf->tb = tb;
-	dsp_buf->base = base;
+	dsp_buf->base = gst_object_ref(base);
+	g_mutex_lock(base->pool_mutex);
+	dsp_buf->cookie = base->cycle;
+	g_mutex_unlock(base->pool_mutex);
 	return buf;
 }
 
@@ -49,11 +53,15 @@ static void finalize(GstMiniObject *obj)
 {
 	GstDspBuffer *dsp_buf = (GstDspBuffer *) obj;
 	GstDspBase *base = dsp_buf->base;
-	if (dsp_buf->tb->pinned) {
+	g_mutex_lock(base->pool_mutex);
+	/* note: in this order, as ->tb may no longer be around */
+	if (base->cycle == dsp_buf->cookie && dsp_buf->tb->pinned) {
 		if (G_UNLIKELY(g_atomic_int_get(&base->eos)))
 			dsp_buf->tb->clean = true;
 		base->send_buffer(base, dsp_buf->tb);
 	}
+	g_mutex_unlock(base->pool_mutex);
+	gst_object_unref(base);
 	parent_class->finalize(obj);
 }
 

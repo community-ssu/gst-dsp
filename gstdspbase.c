@@ -1278,6 +1278,10 @@ change_state(GstElement *element,
 
 	switch (transition) {
 	case GST_STATE_CHANGE_PAUSED_TO_READY:
+		/* ends buffer recycling */
+		g_mutex_lock(self->pool_mutex);
+		self->cycle++;
+		g_mutex_unlock(self->pool_mutex);
 		if (!_dsp_stop(self))
 			gstdsp_post_error(self, "dsp stop failed");
 		if (self->reset)
@@ -1725,6 +1729,7 @@ instance_init(GTypeInstance *instance,
 	gst_element_add_pad(GST_ELEMENT(self), self->srcpad);
 
 	self->ts_mutex = g_mutex_new();
+	self->pool_mutex = g_mutex_new();
 
 	self->flush = g_sem_new(0);
 	self->eos_timeout = 1000;
@@ -1742,6 +1747,7 @@ finalize(GObject *obj)
 	g_sem_free(self->flush);
 
 	g_mutex_free(self->ts_mutex);
+	g_mutex_free(self->pool_mutex);
 
 	du_port_free(self->ports[1]);
 	du_port_free(self->ports[0]);

@@ -126,6 +126,8 @@ struct _GstDspBase {
 
 	gboolean use_pad_alloc; /**< Use pad_alloc for output buffers. */
 	gboolean use_pinned; /**< Reuse output buffers. */
+	GMutex *pool_mutex;
+	gint cycle;
 	guint dsp_error;
 
 	void *(*create_node)(GstDspBase *base);
