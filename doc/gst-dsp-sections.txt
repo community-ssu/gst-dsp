@@ -3,10 +3,18 @@
 <TITLE>dspbase</TITLE>
 GstDspBase
 <SUBSECTION Standard>
+CODEC_ENV_VAR
 GST_DSP_BASE
 GST_DSP_BASE_TYPE
 GST_DSP_BASE_CLASS
 GST_DSP_BASE_GET_CLASS
+XDM_APPLIEDCONCEALMENT
+XDM_UNSUPPORTEDINPUT
+XDM_UNSUPPORTEDPARAM
+XDM_FATALERROR
+XDM_ERROR_IS_APPLIEDCONCEALMENT
+XDM_ERROR_IS_FATAL
+XDM_ERROR_IS_UNSUPPORTED
 GstDspBaseClass
 du_port_t
 td_buffer
@@ -31,6 +39,8 @@ gstdsp_setup_params_func
 gstdsp_debug
 gst_dsp_buffer_get_type
 gst_dsp_buffer_new
+td_h264dec_transform_extra_data
+td_mp4venc_try_extract_extra_data
 </SECTION>
 
 <SECTION>
@@ -54,6 +64,7 @@ GstDspVDec
 GST_DSP_VDEC
 GST_DSP_VDEC_TYPE
 GST_DSP_VDEC_CLASS
+GST_IS_DSP_VDEC
 GstDspVDecClass
 gst_dsp_vdec_get_type
 </SECTION>
