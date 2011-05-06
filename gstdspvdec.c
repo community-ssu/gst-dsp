@@ -27,6 +27,34 @@ static GstDspBaseClass *parent_class;
 
 #define td_jpegdec_codec td_fake_codec
 
+enum {
+	ARG_0,
+	ARG_MODE,
+};
+
+#define DEFAULT_MODE 0
+
+#define GST_TYPE_DSPVDEC_MODE gst_dspvdec_mode_get_type()
+static GType
+gst_dspvdec_mode_get_type(void)
+{
+	static GType gst_dspvdec_mode_type;
+
+	if (!gst_dspvdec_mode_type) {
+		static GEnumValue modes[] = {
+			{0, "Playback", "playback"},
+			{1, "Streaming", "streaming"},
+			{0, NULL, NULL},
+		};
+
+		gst_dspvdec_mode_type = g_enum_register_static("GstDspVDecMode", modes);
+
+	}
+
+	return gst_dspvdec_mode_type;
+
+}
+
 static inline GstCaps *
 generate_sink_template(void)
 {
@@ -468,15 +496,57 @@ GstEvent *event)
 }
 
 static void
+set_property(GObject *obj,
+	     guint prop_id,
+	     const GValue *value,
+	     GParamSpec *pspec)
+{
+
+	GstDspVDec *self = GST_DSP_VDEC(obj);
+
+	switch (prop_id) {
+	case ARG_MODE:
+		self->mode = g_value_get_enum(value);
+		break;
+	default:
+		G_OBJECT_WARN_INVALID_PROPERTY_ID(obj, prop_id, pspec);
+		break;
+	}
+}
+
+static void
+get_property(GObject *obj,
+	     guint prop_id,
+	     GValue *value,
+	     GParamSpec *pspec)
+{
+
+	GstDspVDec *self = GST_DSP_VDEC(obj);
+
+	switch (prop_id) {
+	case ARG_MODE:
+		g_value_set_enum(value, self->mode);
+		break;
+	default:
+		G_OBJECT_WARN_INVALID_PROPERTY_ID(obj, prop_id, pspec);
+		break;
+	}
+}
+
+
+static void
 instance_init(GTypeInstance *instance,
 	      gpointer g_class)
 {
 	GstDspBase *base;
+	GstDspVDec *self;
 
 	base = GST_DSP_BASE(instance);
+	self = GST_DSP_VDEC(instance);
 
 	base->use_pad_alloc = TRUE;
 	base->create_node = create_node;
+	self->mode = DEFAULT_MODE;
 
 	gst_pad_set_setcaps_function(base->sinkpad, sink_setcaps);
 }
@@ -515,9 +585,22 @@ class_init(gpointer g_class,
 	   gpointer class_data)
 {
 	GstDspBaseClass *class;
+	GObjectClass *gobject_class;
 	class = GST_DSP_BASE_CLASS(g_class);
+	gobject_class = G_OBJECT_CLASS(g_class);
 
 	parent_class = g_type_class_peek_parent(g_class);
+
+	gobject_class->set_property = set_property;
+	gobject_class->get_property = get_property;
+
+	g_object_class_install_property(gobject_class, ARG_MODE,
+					g_param_spec_enum("mode", "Decoding mode",
+							  "Decoding mode",
+							  GST_TYPE_DSPVDEC_MODE,
+							  DEFAULT_MODE,
+							  G_PARAM_READWRITE));
+
 	class->src_event = src_event;
 }
 

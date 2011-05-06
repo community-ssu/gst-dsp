@@ -51,6 +51,7 @@ struct _GstDspVDec {
 	gboolean jpeg_is_interlaced;
 	gboolean codec_data_sent;
 	guint32 color_format;
+	gint mode;
 
 	union vdec_priv_data priv;
 };
