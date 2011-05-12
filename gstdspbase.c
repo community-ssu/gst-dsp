@@ -21,6 +21,15 @@
 
 #define GST_CAT_DEFAULT gstdsp_debug
 
+/* gst-dsp errors */
+enum {
+	GSTDSP_ERROR_NONE,
+	GSTDSP_ERROR_DSP_MMUFAULT,
+	GSTDSP_ERROR_DSP_SYSERROR,
+	GSTDSP_ERROR_DSP_UNKNOWN,
+	GSTDSP_ERROR_OTHER,
+};
+
 static inline bool send_buffer(GstDspBase *self, struct td_buffer *tb);
 
 static inline void
@@ -659,7 +668,7 @@ dsp_thread(gpointer data)
 				pr_info(self, "preempted");
 			}
 			pr_err(self, "failed waiting for events: %i", errno);
-			gstdsp_got_error(self, -1, "unable to get event");
+			gstdsp_got_error(self, GSTDSP_ERROR_OTHER, "unable to get event");
 			break;
 		}
 
@@ -674,15 +683,15 @@ dsp_thread(gpointer data)
 			}
 		}
 		else if (index == 1) {
-			gstdsp_got_error(self, 1, "got DSP MMUFAULT");
+			gstdsp_got_error(self, GSTDSP_ERROR_DSP_MMUFAULT, "got DSP MMUFAULT");
 			break;
 		}
 		else if (index == 2) {
-			gstdsp_got_error(self, 2, "got DSP SYSERROR");
+			gstdsp_got_error(self, GSTDSP_ERROR_DSP_SYSERROR, "got DSP SYSERROR");
 			break;
 		}
 		else {
-			gstdsp_got_error(self, 3, "wrong event index");
+			gstdsp_got_error(self, GSTDSP_ERROR_DSP_UNKNOWN, "wrong event index");
 			break;
 		}
 	}
