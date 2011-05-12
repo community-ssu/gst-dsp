@@ -28,6 +28,7 @@ enum {
 	GSTDSP_ERROR_DSP_SYSERROR,
 	GSTDSP_ERROR_DSP_UNKNOWN,
 	GSTDSP_ERROR_OTHER,
+	GSTDSP_ERROR_BUSY,
 };
 
 static inline bool send_buffer(GstDspBase *self, struct td_buffer *tb);
@@ -622,7 +623,11 @@ gstdsp_post_error(GstDspBase *self,
 	GError *gerror;
 	GstMessage *gst_msg;
 
-	gerror = g_error_new_literal(GST_STREAM_ERROR, GST_STREAM_ERROR_FAILED, message);
+	if (self->dsp_error == GSTDSP_ERROR_BUSY)
+		gerror = g_error_new_literal(GST_RESOURCE_ERROR, GST_RESOURCE_ERROR_BUSY, message);
+	else
+		gerror = g_error_new_literal(GST_STREAM_ERROR, GST_STREAM_ERROR_FAILED, message);
+
 	gst_msg = gst_message_new_error(GST_OBJECT(self), gerror, NULL);
 	gst_element_post_message(GST_ELEMENT(self), gst_msg);
 
@@ -635,10 +640,10 @@ gstdsp_got_error(GstDspBase *self,
 	  const char *message)
 {
 	pr_err(self, "%s", message);
+	self->dsp_error = id;
 	gstdsp_post_error(self, message);
 
 	g_atomic_int_set(&self->status, GST_FLOW_ERROR);
-	self->dsp_error = id;
 	async_queue_disable(self->ports[0]->queue);
 	async_queue_disable(self->ports[1]->queue);
 }
@@ -654,6 +659,7 @@ dsp_thread(gpointer data)
 		unsigned int index = 0;
 		pr_debug(self, "waiting for events");
 		if (!dsp_wait_for_events(self->dsp_handle, self->events, 3, &index, 1000)) {
+			int dsp_error = GSTDSP_ERROR_OTHER;
 			if (errno == ETIME) {
 				long elapsed = get_elapsed_eos(self);
 				pr_info(self, "timed out waiting for events");
@@ -666,9 +672,10 @@ dsp_thread(gpointer data)
 				continue;
 			} else if (errno == EBUSY) {
 				pr_info(self, "preempted");
+				dsp_error = GSTDSP_ERROR_BUSY;
 			}
 			pr_err(self, "failed waiting for events: %i", errno);
-			gstdsp_got_error(self, GSTDSP_ERROR_OTHER, "unable to get event");
+			gstdsp_got_error(self, dsp_error, "unable to get event");
 			break;
 		}
 
