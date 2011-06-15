@@ -1038,6 +1038,18 @@ gstdsp_send_alg_ctrl(GstDspBase *self,
 			 0x0400, 3, (uint32_t) b->map);
 }
 
+static inline bool check_dsp_preemption(GstDspBase *self)
+{
+	if (errno == EBUSY) {
+		pr_info(self, "preempted");
+		self->busy = true;
+		gstdsp_got_error(self, GSTDSP_ERROR_BUSY, "dsp init failed");
+		return true;
+	}
+
+	return false;
+}
+
 static GstStateChangeReturn
 change_state(GstElement *element,
 	     GstStateChange transition)
@@ -1053,8 +1065,10 @@ change_state(GstElement *element,
 
 	switch (transition) {
 	case GST_STATE_CHANGE_NULL_TO_READY:
-		if (!dsp_init(self))
-			gstdsp_post_error(self, "dsp init failed");
+		if (!dsp_init(self)) {
+			if (!check_dsp_preemption(self))
+				gstdsp_post_error(self, "dsp init failed");
+		}
 		break;
 
 	case GST_STATE_CHANGE_READY_TO_PAUSED:
@@ -1292,7 +1306,8 @@ pad_chain(GstPad *pad,
 
 	if (G_UNLIKELY(!self->node)) {
 		if (!init_node(self, buf)) {
-			gstdsp_post_error(self, "couldn't start node");
+			if (!check_dsp_preemption(self))
+				gstdsp_post_error(self, "couldn't start node");
 			ret = GST_FLOW_ERROR;
 			goto leave;
 		}
