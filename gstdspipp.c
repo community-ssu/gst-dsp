@@ -1186,6 +1186,16 @@ get_eenf_dyn_params(GstDspIpp *self)
 	params->size = sizeof(*params);
 	params->in_place = 0;
 
+	if (self->dyn_params) {
+		dmm_buffer_free(self->dyn_params);
+		self->dyn_params = NULL;
+	}
+
+	if (self->status_params) {
+		dmm_buffer_free(self->status_params);
+		self->status_params = NULL;
+	}
+
 	tmp = ipp_calloc(self, sizeof(*params), DMA_TO_DEVICE);
 	memcpy(tmp->data, params, sizeof(*params));
 	dmm_buffer_map(tmp);
