@@ -508,6 +508,7 @@ static void got_message(GstDspBase *base, struct dsp_msg *msg)
 	case DFGM_START_PROCESSING_ACK:
 	case DFGM_FREE_BUFF:
 	case DFGM_CONTROL_PIPE_ACK:
+	case DFGM_FLUSH_PIPE_ACK:
 		free_message_args(self);
 		break;
 	case DFGM_EVENT_ERROR:
@@ -799,6 +800,29 @@ static bool create_pipe(GstDspIpp *self)
 static bool start_processing(GstDspIpp *self)
 {
 	return send_msg(self, DFGM_START_PROCESSING, NULL, get_msg_2(self), NULL);
+}
+
+struct flush_pipe_msg_elem_1 {
+	uint32_t size;
+	uint32_t content_type;
+	uint32_t num_buffer_port;
+	uint32_t num_arg_port;
+};
+
+static bool flush_pipe(GstDspIpp *self, int content_type)
+{
+	struct flush_pipe_msg_elem_1 *msg_1;
+	dmm_buffer_t *b_arg_1;
+
+	b_arg_1 = ipp_calloc(self, sizeof(*msg_1), DMA_TO_DEVICE);
+	msg_1 = b_arg_1->data;
+	msg_1->size = sizeof(*msg_1);
+	msg_1->content_type = content_type;
+	msg_1->num_buffer_port = -1;
+	msg_1->num_arg_port = -1;
+	dmm_buffer_map(b_arg_1);
+
+	return send_msg(self, DFGM_FLUSH_PIPE, b_arg_1, get_msg_2(self), NULL);
 }
 
 struct control_pipe_msg_elem_1 {
@@ -1155,6 +1179,7 @@ static bool send_buffer(GstDspBase *base, struct td_buffer *tb)
 	send_processing_info_gstmessage(self, "ipp-start-init");
 
 	get_eenf_dyn_params(self);
+
 	ok = control_pipe(self);
 	if (!ok)
 		return ok;
