@@ -484,16 +484,29 @@ static void got_message(GstDspBase *base, struct dsp_msg *msg)
 		struct td_buffer *tb;
 
 #ifdef OVERWRITE_INPUT_BUFFER
-		if (!(self->nr_algos & 0x01)) {
-			tb = self->out_buf_ptr;
-		} else {
-			tb = self->in_buf_ptr;
-			tb->port = p;
-		}
+		dmm_buffer_t *input_data = self->in_buf_ptr->data;
+		dmm_buffer_t *output_data = self->out_buf_ptr->data;
+		tb = self->out_buf_ptr;
+		if (self->nr_algos & 0x01)
+			tb->data = input_data;
 #else
 		tb = self->out_buf_ptr;
 #endif
 		tb->data->len = base->output_buffer_size;
+		async_queue_push(p->queue, tb);
+
+		/* push buffer into input queue */
+		p = base->ports[0];
+#ifdef OVERWRITE_INPUT_BUFFER
+		tb = self->in_buf_ptr;
+		if (self->nr_algos & 0x01)
+			tb->data = output_data;
+
+		async_queue_push(p->queue, tb);
+#else
+		p = base->ports[0];
+		tb = self->in_buf_ptr;
+#endif
 		async_queue_push(p->queue, tb);
 	}
 
@@ -1607,6 +1620,7 @@ static void instance_init(GTypeInstance *instance, gpointer g_class)
 	base->reset = reset;
 	self->msg_sem = g_sem_new(1);
 	base->eos_timeout = 0;
+	base->use_pinned = TRUE;
 
 	/* initialize params to normal strength */
 	memcpy(&self->eenf_params, &eenf_normal, sizeof(eenf_normal));
