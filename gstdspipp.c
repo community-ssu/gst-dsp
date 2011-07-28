@@ -825,6 +825,25 @@ static bool flush_pipe(GstDspIpp *self, int content_type)
 	return send_msg(self, DFGM_FLUSH_PIPE, b_arg_1, get_msg_2(self), NULL);
 }
 
+static bool flush_queue_buffer(GstDspIpp *self)
+{
+	bool ok;
+
+	ok = flush_pipe(self, CONTENT_TYPE_BUFFER);
+	if (!ok)
+		return ok;
+
+	ok = flush_pipe(self, CONTENT_TYPE_IN_ARGS);
+	if (!ok)
+		return ok;
+
+	ok = flush_pipe(self, CONTENT_TYPE_OUT_ARGS);
+	if (!ok)
+		return ok;
+
+	return TRUE;
+}
+
 struct control_pipe_msg_elem_1 {
 	uint32_t size;
 	struct {
@@ -1186,7 +1205,11 @@ static bool send_buffer(GstDspBase *base, struct td_buffer *tb)
 
 	dmm_buffer_map(tb->data);
 
-	return queue_buffer(GST_DSP_IPP(base), tb);
+	ok = queue_buffer(GST_DSP_IPP(base), tb);
+	if (!ok)
+		return ok;
+
+	return flush_queue_buffer(self);
 }
 
 static bool send_play_message(GstDspBase *base)
