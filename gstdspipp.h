@@ -73,6 +73,8 @@ struct _GstDspIpp {
 	GSem *msg_sem;
 	struct ipp_eenf_params eenf_params;
 	int eenf_strength;
+	GSem *sync_sem;
+	bool is_ipp_started;
 
 	dmm_buffer_t *msg_ptr[3];
 	dmm_buffer_t *flt_graph;

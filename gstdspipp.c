@@ -572,8 +572,13 @@ static bool send_msg(GstDspIpp *self, int id,
 
 	ipp_buffer_begin(self);
 
-	if (id == DFGM_QUEUE_BUFF)
+	if (id == DFGM_QUEUE_BUFF) {
 		send_processing_info_gstmessage(self, "ipp-start-processing");
+		if (!g_sem_down_timed(self->sync_sem, IPP_TIMEOUT)) {
+			pr_err(self, "waiting for buffer timed out");
+			return FALSE;
+		}
+	}
 
 	return dsp_send_message(base->dsp_handle, base->node, id,
 				arg1 ? (uint32_t)arg1->map : 0,
@@ -1212,9 +1217,13 @@ static bool send_buffer(GstDspBase *base, struct td_buffer *tb)
 	bool ok;
 
 	/* no need to send output buffer to dsp */
-	if (tb->port->id == 1)
+	if (tb->port->id == 1) {
+		if(self->is_ipp_started)
+			g_sem_up(self->sync_sem);
 		return true;
+	}
 
+	self->is_ipp_started = true;
 	if (base->dsp_error)
 		return false;
 
@@ -1629,6 +1638,7 @@ static void instance_init(GTypeInstance *instance, gpointer g_class)
 	base->send_stop_message = send_stop_message;
 	base->reset = reset;
 	self->msg_sem = g_sem_new(1);
+	self->sync_sem = g_sem_new(1);
 	base->eos_timeout = 0;
 	base->use_pinned = TRUE;
 
@@ -1643,6 +1653,7 @@ static void finalize(GObject *obj)
 	GstDspIpp *self = GST_DSP_IPP(obj);
 
 	g_sem_free(self->msg_sem);
+	g_sem_free(self->sync_sem);
 	G_OBJECT_CLASS(parent_class)->finalize(obj);
 }
 
