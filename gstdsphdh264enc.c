@@ -43,6 +43,7 @@ enum {
 #ifdef GST_DSP_ENABLE_DEPRECATED
 	ARG_BYTESTREAM,
 #endif
+	ARG_SLICE_SIZE_MB,
 };
 
 static inline GstCaps *
@@ -71,6 +72,7 @@ instance_init(GTypeInstance *instance,
 	base->codec = &td_hdh264enc_codec;
 
 	self->priv.h264.bytestream = true;
+	self->priv.h264.slice_size_mb = 0;
 
 	self->supported_levels = levels;
 	self->nr_supported_levels = ARRAY_SIZE(levels);
@@ -113,6 +115,9 @@ set_property(GObject *obj,
 		self->priv.h264.bytestream = g_value_get_boolean(value);
 		break;
 #endif
+	case ARG_SLICE_SIZE_MB:
+		self->priv.h264.slice_size_mb = g_value_get_uint(value);
+		break;
 	default:
 		G_OBJECT_WARN_INVALID_PROPERTY_ID(obj, prop_id, pspec);
 		break;
@@ -133,6 +138,9 @@ get_property(GObject *obj,
 		g_value_set_boolean(value, self->priv.h264.bytestream);
 		break;
 #endif
+	case ARG_SLICE_SIZE_MB:
+		g_value_set_uint(value, self->priv.h264.slice_size_mb);
+		break;
 	default:
 		G_OBJECT_WARN_INVALID_PROPERTY_ID(obj, prop_id, pspec);
 		break;
@@ -155,6 +163,11 @@ class_init(gpointer g_class,
 					g_param_spec_boolean("bytestream", "BYTESTREAM", "bytestream",
 							     true, G_PARAM_READWRITE));
 #endif
+	g_object_class_install_property(gobject_class, ARG_SLICE_SIZE_MB,
+			g_param_spec_uint("slice-size-mb",
+				"Number of MB's per slice",
+				"Number of MacroBlocks in a slice (NAL unit)", 0, G_MAXUINT,
+				0, G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
 }
 
 GType

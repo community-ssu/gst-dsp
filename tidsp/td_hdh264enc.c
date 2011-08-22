@@ -190,6 +190,14 @@ static void create_args(GstDspBase *base, unsigned *profile_id, void **arg_data)
 	if (self->intra_refresh)
 		args.cir_mbs_n = frame_interval ? mbpf / frame_interval : 1;
 
+	if (self->priv.h264.slice_size_mb &&
+	   self->priv.h264.slice_size_mb < mbpf)
+	{
+		unsigned mb_per_row = self->width / 16;
+		args.no_of_mbrows_per_slice = self->priv.h264.slice_size_mb / mb_per_row;
+		args.disable_dblock_across_slice = 1;
+	}
+
 	switch (self->level) {
 	case 9:
 	case 10:

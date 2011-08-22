@@ -29,6 +29,7 @@ union venc_priv_data {
 		gboolean bytestream;
 		gboolean sps_received, pps_received, codec_data_done;
 		GstBuffer *sps, *pps, *codec_data;
+		guint slice_size_mb;
 	} h264;
 	struct {
 		gboolean codec_data_done;
