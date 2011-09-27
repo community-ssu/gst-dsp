@@ -574,12 +574,17 @@ output_loop(gpointer data)
 
 	/* first clear pending events */
 	g_mutex_lock(self->ts_mutex);
-	while ((event = self->ts_array[self->ts_out_pos].event)) {
+	while ((self->ts_array[self->ts_out_pos].events)) {
 		gboolean drop;
 
-		self->ts_array[self->ts_out_pos].event = NULL;
+		event = self->ts_array[self->ts_out_pos].events->data;
+		self->ts_array[self->ts_out_pos].events =
+			g_slist_delete_link(self->ts_array[self->ts_out_pos].events,
+					self->ts_array[self->ts_out_pos].events);
 		flush_buffer = (self->ts_out_pos != self->ts_push_pos);
-		self->ts_out_pos = (self->ts_out_pos + 1) % ARRAY_SIZE(self->ts_array);
+		/* 2 separate event entries in sequence should not happen, but anyway ... */
+		if (!self->ts_array[self->ts_out_pos].events)
+			self->ts_out_pos = (self->ts_out_pos + 1) % ARRAY_SIZE(self->ts_array);
 		if (G_LIKELY(!flush_buffer)) {
 			ret = process_event(self, event, &drop);
 			self->ts_push_pos = self->ts_out_pos;
@@ -1072,9 +1077,10 @@ _dsp_stop(GstDspBase *self)
 	}
 
 	for (i = 0; i < ARRAY_SIZE(self->ts_array); i++) {
-		if (self->ts_array[i].event) {
-			gst_event_unref(self->ts_array[i].event);
-			self->ts_array[i].event = NULL;
+		if (self->ts_array[i].events) {
+			g_slist_foreach(self->ts_array[i].events, (GFunc) gst_event_unref, NULL);
+			g_slist_free(self->ts_array[i].events);
+			self->ts_array[i].events = NULL;
 		}
 	}
 	self->ts_in_pos = self->ts_out_pos = self->ts_push_pos = 0;
@@ -1612,21 +1618,24 @@ sink_event(GstDspBase *self,
 		gst_pad_start_task(self->srcpad, output_loop, self->srcpad);
 		break;
 
-	case GST_EVENT_NEWSEGMENT:
-		g_mutex_lock(self->ts_mutex);
-		pr_debug(self, "storing event");
-		self->ts_array[self->ts_in_pos].event = event;
-		self->ts_in_pos = (self->ts_in_pos + 1) % ARRAY_SIZE(self->ts_array);
-		g_mutex_unlock(self->ts_mutex);
-		break;
-
-	/*
-	 * FIXME maybe serialize some more events ??,
-	 * but that may need more than a fixed size queue
-	 */
-
 	default:
-		ret = gst_pad_push_event(self->srcpad, event);
+		if (!GST_EVENT_IS_SERIALIZED(event)) {
+			ret = gst_pad_push_event(self->srcpad, event);
+		} else {
+			gint prev_pos;
+
+			g_mutex_lock(self->ts_mutex);
+			pr_debug(self, "storing event");
+			/* check if previous position stores event, if so, add it to that list */
+			prev_pos = (self->ts_in_pos == 0) ?
+				ARRAY_SIZE(self->ts_array) - 1 : self->ts_in_pos - 1;
+			if (self->ts_array[prev_pos].events)
+				self->ts_in_pos = prev_pos;
+			self->ts_array[self->ts_in_pos].events =
+				g_slist_append(self->ts_array[self->ts_in_pos].events, event);
+			self->ts_in_pos = (self->ts_in_pos + 1) % ARRAY_SIZE(self->ts_array);
+			g_mutex_unlock(self->ts_mutex);
+		}
 		break;
 	}
 

@@ -90,7 +90,7 @@ struct td_codec {
 struct ts_item {
 	GstClockTime time;
 	GstClockTime duration;
-	GstEvent *event;
+	GSList *events;
 };
 
 struct _GstDspBase {
@@ -114,7 +114,7 @@ struct _GstDspBase {
 
 	du_port_t *ports[2];
 	dmm_buffer_t *alg_ctrl;
-	struct ts_item ts_array[40];
+	struct ts_item ts_array[80];
 	guint ts_in_pos, ts_out_pos, ts_push_pos;
 	GMutex *ts_mutex;
 	gulong ts_count;
