@@ -1352,9 +1352,6 @@ static void *create_node(GstDspIpp *self)
 	const struct dsp_uuid dfgm_uuid = { 0xe57d1a99, 0xbc8d, 0x463c, 0xac, 0x93,
 		{ 0x49, 0xeA, 0x1A, 0xC0, 0x19, 0x53 } };
 
-	const struct dsp_uuid ipp_uuid = { 0x8ea1b508, 0x49be, 0x4cd0, 0xbb, 0x12,
-		{ 0xea, 0x95, 0x00, 0x58, 0xb3, 0x6b } };
-
 	struct dsp_node_attr_in attrs = {
 		.cb = sizeof(attrs),
 		.priority = 5,
@@ -1369,17 +1366,17 @@ static void *create_node(GstDspIpp *self)
 		return NULL;
 	}
 
-	if (!gstdsp_register(dsp_handle, &ipp_uuid, DSP_DCD_LIBRARYTYPE, "ipp_sn.dll64P")) {
+	if (!gstdsp_register(dsp_handle, base->codec->uuid, DSP_DCD_LIBRARYTYPE, base->codec->filename)) {
 		pr_err(self, "failed to register algo node library");
 		return NULL;
 	}
 
-	if (!gstdsp_register(dsp_handle, &ipp_uuid, DSP_DCD_NODETYPE, "ipp_sn.dll64P")) {
+	if (!gstdsp_register(dsp_handle, base->codec->uuid, DSP_DCD_NODETYPE, base->codec->filename)) {
 		pr_err(self, "failed to register algo node");
 		return NULL;
 	}
 
-	if (!dsp_node_allocate(dsp_handle, base->proc, &ipp_uuid, NULL, &attrs, &node)) {
+	if (!dsp_node_allocate(dsp_handle, base->proc, base->codec->uuid, NULL, &attrs, &node)) {
 		pr_err(self, "dsp node allocate failed");
 		dsp_node_free(dsp_handle, node);
 		return NULL;
@@ -1627,6 +1624,12 @@ get_property(GObject *obj,
 	}
 }
 
+struct td_codec ipp_codec = {
+	.uuid = &(const struct dsp_uuid) { 0x8ea1b508, 0x49be, 0x4cd0, 0xbb, 0x12,
+		{ 0xea, 0x95, 0x00, 0x58, 0xb3, 0x6b } },
+	.filename = "ipp_sn.dll64P",
+};
+
 static void instance_init(GTypeInstance *instance, gpointer g_class)
 {
 	GstDspBase *base = GST_DSP_BASE(instance);
@@ -1641,6 +1644,7 @@ static void instance_init(GTypeInstance *instance, gpointer g_class)
 	self->sync_sem = g_sem_new(1);
 	base->eos_timeout = 0;
 	base->use_pinned = TRUE;
+	base->codec = &ipp_codec;
 
 	/* initialize params to normal strength */
 	memcpy(&self->eenf_params, &eenf_normal, sizeof(eenf_normal));
