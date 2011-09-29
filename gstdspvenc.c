@@ -248,6 +248,7 @@ sink_setcaps(GstPad *pad,
 	GstCaps *allowed_caps;
 	gint tgt_level = -1;
 	struct td_codec *codec;
+	gint owidth, oheight;
 
 	self = GST_DSP_VENC(GST_PAD_PARENT(pad));
 	base = GST_DSP_BASE(self);
@@ -325,26 +326,9 @@ sink_setcaps(GstPad *pad,
 		break;
 	}
 
-	if (base->node)
-		goto skip_setup;
 
-	switch (base->alg) {
-	case GSTDSP_JPEGENC:
-		du_port_alloc_buffers(base->ports[0], 1);
-		du_port_alloc_buffers(base->ports[1], 2);
-		break;
-	case GSTDSP_HDMP4VENC:
-	case GSTDSP_HDH264ENC:
-		du_port_alloc_buffers(base->ports[0], 6);
-		du_port_alloc_buffers(base->ports[1], 8);
-		break;
-	default:
-		du_port_alloc_buffers(base->ports[0], 2);
-		du_port_alloc_buffers(base->ports[1], 4);
-		break;
-	}
-
-skip_setup:
+	owidth = self->width;
+	oheight = self->height;
 	self->width = width;
 	self->height = height;
 
@@ -399,8 +383,47 @@ skip_setup:
 	if (!gst_pad_take_caps(base->srcpad, out_caps))
 		return FALSE;
 
+	if (gstdsp_need_node_reset(base, caps, owidth, oheight)) {
+
+		/* flush pending frames if needed */
+		if (base->flush_buffer) {
+			pr_debug(self, "flushing pending");
+			base->flush_buffer(base);
+		}
+
+		/* wait (some time) for all to have been pushed */
+		g_mutex_lock(base->ts_mutex);
+		while (base->ts_count > 0) {
+			GTimeVal tv = {1, 0};
+
+			if (!g_cond_timed_wait(base->ts_cond, base->ts_mutex, &tv)) {
+				pr_info(self, "timeout waiting for all buffers pushed");
+				break;
+			}
+		}
+		g_mutex_unlock(base->ts_mutex);
+
+		gstdsp_reinit(base);
+	}
+
 	if (base->node)
 		return TRUE;
+
+	switch (base->alg) {
+	case GSTDSP_JPEGENC:
+		du_port_alloc_buffers(base->ports[0], 1);
+		du_port_alloc_buffers(base->ports[1], 2);
+		break;
+	case GSTDSP_HDMP4VENC:
+	case GSTDSP_HDH264ENC:
+		du_port_alloc_buffers(base->ports[0], 6);
+		du_port_alloc_buffers(base->ports[1], 8);
+		break;
+	default:
+		du_port_alloc_buffers(base->ports[0], 2);
+		du_port_alloc_buffers(base->ports[1], 4);
+		break;
+	}
 
 	base->node = create_node(self);
 	if (!base->node) {

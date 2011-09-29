@@ -117,6 +117,7 @@ struct _GstDspBase {
 	struct ts_item ts_array[80];
 	guint ts_in_pos, ts_out_pos, ts_push_pos;
 	GMutex *ts_mutex;
+	GCond *ts_cond;
 	gulong ts_count;
 	GstClockTime last_ts, next_ts;
 	enum ts_mode ts_mode;
@@ -171,6 +172,7 @@ void du_port_alloc_buffers(du_port_t *p, guint num_buffers);
 gboolean gstdsp_start(GstDspBase *self);
 gboolean gstdsp_send_codec_data(GstDspBase *self, GstBuffer *buf);
 gboolean gstdsp_set_codec_data_caps(GstDspBase *base, GstBuffer *buf);
+gboolean gstdsp_need_node_reset(GstDspBase *base, GstCaps *new_caps, gint w, gint h);
 gboolean gstdsp_reinit(GstDspBase *base);
 void gstdsp_got_error(GstDspBase *self, guint id, const char *message);
 void gstdsp_post_error(GstDspBase *self, const char *message);

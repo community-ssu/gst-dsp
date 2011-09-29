@@ -707,6 +707,7 @@ output_loop(gpointer data)
 	self->ts_out_pos = (self->ts_out_pos + 1) % ARRAY_SIZE(self->ts_array);
 	self->ts_push_pos = self->ts_out_pos;
 	self->ts_count--;
+	g_cond_signal(self->ts_cond);
 
 	if (G_UNLIKELY(g_atomic_int_get(&self->deferred_eos)) && self->ts_count == 0)
 		got_eos = TRUE;
@@ -1125,12 +1126,35 @@ leave:
 	return TRUE;
 }
 
+gboolean gstdsp_need_node_reset(GstDspBase *base, GstCaps *new_caps, gint w, gint h)
+{
+	gint width, height;
+	GstStructure *struc;
+
+	if (G_UNLIKELY(!base->node))
+		return FALSE;
+
+	struc = gst_caps_get_structure(new_caps, 0);
+	gst_structure_get_int(struc, "width", &width);
+	gst_structure_get_int(struc, "height", &height);
+
+	if (w == width && h == height)
+		return FALSE;
+
+	return TRUE;
+}
+
 gboolean gstdsp_reinit(GstDspBase *self)
 {
 	/* deinit */
 	g_atomic_int_set(&self->status, GST_FLOW_WRONG_STATE);
 	async_queue_disable(self->ports[0]->queue);
 	async_queue_disable(self->ports[1]->queue);
+
+	/* ends buffer recycling */
+	g_mutex_lock(self->pool_mutex);
+	self->cycle++;
+	g_mutex_unlock(self->pool_mutex);
 
 	if (!_dsp_stop(self))
 		gstdsp_post_error(self, "dsp stop failed");
@@ -1730,6 +1754,7 @@ instance_init(GTypeInstance *instance,
 
 	self->ts_mutex = g_mutex_new();
 	self->pool_mutex = g_mutex_new();
+	self->ts_cond = g_cond_new();
 
 	self->flush = g_sem_new(0);
 	self->eos_timeout = 1000;
@@ -1748,6 +1773,7 @@ finalize(GObject *obj)
 
 	g_mutex_free(self->ts_mutex);
 	g_mutex_free(self->pool_mutex);
+	g_cond_free(self->ts_cond);
 
 	du_port_free(self->ports[1]);
 	du_port_free(self->ports[0]);

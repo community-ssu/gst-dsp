@@ -474,7 +474,7 @@ sink_setcaps(GstPad *pad,
 	}
 #endif
 
-	if (need_node_reset(self, caps))
+	if (gstdsp_need_node_reset(base, caps, self->width, self->height))
 		gstdsp_reinit(base);
 
 	in_struc = gst_caps_get_structure(caps, 0);
