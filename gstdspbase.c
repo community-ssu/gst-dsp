@@ -1416,6 +1416,11 @@ static gboolean base_query(GstPad *pad, GstQuery *query)
 		pr_debug(base, "latency query live=%d, min=%" GST_TIME_FORMAT",max=%" GST_TIME_FORMAT,
 			live, GST_TIME_ARGS(min), GST_TIME_ARGS(max));
 
+		if (!base->codec) {
+			pr_debug(base, "no codec identified yet, bailing");
+			break;
+		}
+
 		if (base->default_duration) {
 			frame_duration = base->default_duration;
 		} else {
