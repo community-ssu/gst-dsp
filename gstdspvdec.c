@@ -338,7 +338,8 @@ static void save_codec_data(GstDspBase *base, GstStructure *in_struc)
 	if (!buf)
 		return;
 
-	gst_buffer_unref(base->codec_data);
+	if (base->codec_data)
+		gst_buffer_unref(base->codec_data);
 	base->codec_data = gst_buffer_ref(buf);
 }
 
