@@ -27,7 +27,8 @@ static GstDspBaseClass *parent_class;
 #define INTERNAL_FORMAT IPP_YUV_420P
 #endif
 
-#define OVERWRITE_INPUT_BUFFER
+/* not quite recommended at present */
+/* #define OVERWRITE_INPUT_BUFFER */
 
 static bool send_stop_message(GstDspBase *base);
 static gboolean sink_event(GstDspBase *base, GstEvent *event);
@@ -497,17 +498,19 @@ static void got_message(GstDspBase *base, struct dsp_msg *msg)
 
 		/* push buffer into input queue */
 		p = base->ports[0];
-#ifdef OVERWRITE_INPUT_BUFFER
 		tb = self->in_buf_ptr;
-		if (self->nr_algos & 0x01)
-			tb->data = output_data;
+		/* NOTE needed, but does not go well with overwrite input */
+		if (tb->user_data) {
+			gst_buffer_unref(tb->user_data);
+			tb->user_data = NULL;
+		}
+		async_queue_push(p->queue, tb);
 
-		async_queue_push(p->queue, tb);
-#else
-		p = base->ports[0];
-		tb = self->in_buf_ptr;
-#endif
-		async_queue_push(p->queue, tb);
+		/* clear intermediate one, if any */
+		if (self->intermediate_buf) {
+			dmm_buffer_free(self->intermediate_buf);
+			self->intermediate_buf = NULL;
+		}
 	}
 
 	switch (command_id) {
