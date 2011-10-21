@@ -1486,7 +1486,7 @@ static gboolean sink_setcaps(GstPad *pad, GstCaps *caps)
 		return FALSE;
 
 	du_port_alloc_buffers(base->ports[0], 1);
-	du_port_alloc_buffers(base->ports[1], 1);
+	du_port_alloc_buffers(base->ports[1], 2);
 
 	base->node = create_node(self);
 
