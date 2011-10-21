@@ -511,6 +511,9 @@ static void got_message(GstDspBase *base, struct dsp_msg *msg)
 			dmm_buffer_free(self->intermediate_buf);
 			self->intermediate_buf = NULL;
 		}
+
+		/* signal processing finished */
+		g_sem_up(self->sync_sem);
 	}
 
 	switch (command_id) {
@@ -574,14 +577,6 @@ static bool send_msg(GstDspIpp *self, int id,
 	self->msg_ptr[2] = arg3;
 
 	ipp_buffer_begin(self);
-
-	if (id == DFGM_QUEUE_BUFF) {
-		send_processing_info_gstmessage(self, "ipp-start-processing");
-		if (!g_sem_down_timed(self->sync_sem, IPP_TIMEOUT)) {
-			pr_err(self, "waiting for buffer timed out");
-			return FALSE;
-		}
-	}
 
 	return dsp_send_message(base->dsp_handle, base->node, id,
 				arg1 ? (uint32_t)arg1->map : 0,
@@ -944,7 +939,7 @@ struct queue_buff_msg_elem_1 {
 	uint32_t next_content_ptr;
 };
 
-static bool queue_buffer(GstDspIpp *self, struct td_buffer *tb)
+static bool queue_buffer(GstDspIpp *self, struct td_buffer *tb, struct td_buffer *otb)
 {
 	GstDspBase *base = GST_DSP_BASE(self);
 	struct queue_buff_msg_elem_1 *queue_msg1;
@@ -952,7 +947,6 @@ static bool queue_buffer(GstDspIpp *self, struct td_buffer *tb)
 	dmm_buffer_t *msg_elem_array;
 	int32_t cur_idx = 0;
 	int i = 0;
-	du_port_t *port;
 	int nr_algos = self->nr_algos;
 	int nr_buffers;
 	int nr_msgs;
@@ -981,9 +975,8 @@ static bool queue_buffer(GstDspIpp *self, struct td_buffer *tb)
 			queue_msg1->content_size = base->input_buffer_size;
 			queue_msg1->content_ptr = (uint32_t)tb->data->map;
 		} else if (i == 1) {
-			port = base->ports[1];
-			dmm_buffer_map(port->buffers[0].data);
-			self->out_buf_ptr = &port->buffers[0];
+			dmm_buffer_map(otb->data);
+			self->out_buf_ptr = otb;
 			queue_msg1->content_size_used = base->output_buffer_size;
 			queue_msg1->content_size = base->output_buffer_size;
 			queue_msg1->content_ptr = (uint32_t)self->out_buf_ptr->data->map;
@@ -1218,17 +1211,33 @@ static GstFlowReturn send_buffer(GstDspBase *base, struct td_buffer *tb)
 {
 	GstDspIpp *self = GST_DSP_IPP(base);
 	bool ok;
+	struct td_buffer *otb;
 
 	/* no need to send output buffer to dsp */
 	if (tb->port->id == 1) {
-		if(self->is_ipp_started)
-			g_sem_up(self->sync_sem);
+		/* in stead, we will do that later on, but for now queue it as available */
+		pr_debug(self, "collecting ipp output buffer %p", tb);
+		async_queue_push(self->ipp_queue, tb);
 		return true;
 	}
 
-	self->is_ipp_started = true;
 	if (base->dsp_error)
 		return false;
+
+	/* need an output buffer */
+	otb = async_queue_pop(self->ipp_queue);
+	/* may have entered flushing state */
+	if (!otb) {
+		pr_debug(self, "could not obtain output buffer -> flushing");
+		/* do not lose this one */
+		if (tb->user_data) {
+			gst_buffer_unref(tb->user_data);
+			tb->user_data = NULL;
+		}
+		async_queue_push(base->ports[0]->queue, tb);
+		return GST_FLOW_WRONG_STATE;
+	}
+	pr_debug(self, "got ipp output buffer %p", otb);
 
 	send_processing_info_gstmessage(self, "ipp-start-init");
 
@@ -1240,11 +1249,23 @@ static GstFlowReturn send_buffer(GstDspBase *base, struct td_buffer *tb)
 
 	dmm_buffer_map(tb->data);
 
-	ok = queue_buffer(GST_DSP_IPP(base), tb);
+	self->sync_sem->count = 0;
+
+	ok = queue_buffer(GST_DSP_IPP(base), tb, otb);
 	if (!ok)
 		return GST_FLOW_ERROR;
 
-	return flush_queue_buffer(self) ? GST_FLOW_OK : GST_FLOW_ERROR;
+	ok = flush_queue_buffer(self);
+	if (!ok)
+		return GST_FLOW_ERROR;
+
+	/* wait until processing finished */
+	if (!g_sem_down_timed(self->sync_sem, IPP_TIMEOUT)) {
+		pr_err(self, "waiting for processing timed out");
+		return GST_FLOW_ERROR;
+	}
+
+	return GST_FLOW_OK;
 }
 
 static bool send_play_message(GstDspBase *base)
@@ -1279,6 +1300,7 @@ static void reset(GstDspBase *base)
 	self->dyn_params = NULL;
 	dmm_buffer_free(self->status_params);
 	self->status_params = NULL;
+	async_queue_flush(self->ipp_queue);
 }
 
 static bool send_stop_message(GstDspBase *base)
@@ -1644,7 +1666,8 @@ static void instance_init(GTypeInstance *instance, gpointer g_class)
 	base->send_stop_message = send_stop_message;
 	base->reset = reset;
 	self->msg_sem = g_sem_new(1);
-	self->sync_sem = g_sem_new(1);
+	self->sync_sem = g_sem_new(0);
+	self->ipp_queue = async_queue_new();
 	base->eos_timeout = 0;
 	base->use_pinned = TRUE;
 	base->codec = &ipp_codec;
@@ -1661,6 +1684,7 @@ static void finalize(GObject *obj)
 
 	g_sem_free(self->msg_sem);
 	g_sem_free(self->sync_sem);
+	async_queue_free(self->ipp_queue);
 	G_OBJECT_CLASS(parent_class)->finalize(obj);
 }
 
@@ -1725,7 +1749,7 @@ GType gst_dsp_ipp_get_type(void)
 			.base_init = base_init,
 			.class_init = class_init,
 			.instance_size = sizeof(GstDspIpp),
-			.instance_init = instance_init,
+			.instance_init = instance_init
 		};
 
 		type = g_type_register_static(GST_DSP_BASE_TYPE, "GstDspIpp", &type_info, 0);

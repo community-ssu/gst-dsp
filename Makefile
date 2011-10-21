@@ -34,7 +34,7 @@ $(gst_plugin): override LIBS += $(GST_LIBS)
 targets += $(gst_plugin)
 
 gst-dsp-parse: parse-test.o gstdspbuffer.o gstdspparse.o gstdspvdec.o \
-	gstdspbase.o util.o dsp_bridge.o async_queue.o log.o \
+	gstdspbase.o util.o dsp_bridge.o async_queue.o log.o gstdspipp.o \
 	tidsp.a
 gst-dsp-parse: override CFLAGS += $(GST_CFLAGS) -D DSPDIR='"$(dspdir)"'
 gst-dsp-parse: override LIBS += $(GST_LIBS)

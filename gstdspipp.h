@@ -21,6 +21,8 @@ G_BEGIN_DECLS
 #define GST_DSP_IPP(obj) (GstDspIpp *)(obj)
 #define GST_DSP_IPP_TYPE (gst_dsp_ipp_get_type())
 #define GST_DSP_IPP_CLASS(obj) (GstDspIppClass *)(obj)
+#define GST_IS_DSP_IPP(obj) \
+  (G_TYPE_CHECK_INSTANCE_TYPE((obj), gst_dsp_ipp_get_type()))
 
 #define IPP_MAX_NUM_OF_ALGOS 5
 
@@ -74,7 +76,7 @@ struct _GstDspIpp {
 	struct ipp_eenf_params eenf_params;
 	int eenf_strength;
 	GSem *sync_sem;
-	bool is_ipp_started;
+	AsyncQueue *ipp_queue;
 
 	dmm_buffer_t *msg_ptr[3];
 	dmm_buffer_t *flt_graph;

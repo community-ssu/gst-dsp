@@ -11,6 +11,7 @@
 #include "gstdspbase.h"
 #include "gstdspvdec.h"
 #include "gstdspbuffer.h"
+#include "gstdspipp.h"
 #include "plugin.h"
 
 #include "dsp_bridge.h"
@@ -191,9 +192,13 @@ dsp_unlock(GstDspBase *self, gboolean unlock)
 	if (unlock) {
 		async_queue_disable(self->ports[0]->queue);
 		async_queue_disable(self->ports[1]->queue);
+		if (GST_IS_DSP_IPP(self))
+			async_queue_disable(((GstDspIpp *) self)->ipp_queue);
 	} else {
 		async_queue_enable(self->ports[0]->queue);
 		async_queue_enable(self->ports[1]->queue);
+		if (GST_IS_DSP_IPP(self))
+			async_queue_enable(((GstDspIpp *) self)->ipp_queue);
 	}
 }
 
@@ -1598,7 +1603,12 @@ next:
 	self->ts_count++;
 	g_mutex_unlock(self->ts_mutex);
 
-	self->send_buffer(self, tb);
+	ret = self->send_buffer(self, tb);
+	if (ret != GST_FLOW_OK) {
+		pr_info(self, "status: %s", gst_flow_get_name(self->status));
+		if (ret == GST_FLOW_ERROR)
+			gstdsp_post_error(self, "sending buffer failed");
+	}
 
 leave:
 
