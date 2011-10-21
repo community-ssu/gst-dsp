@@ -186,6 +186,18 @@ typedef struct {
 static GstElementClass *parent_class;
 
 static inline void
+dsp_unlock(GstDspBase *self, gboolean unlock)
+{
+	if (unlock) {
+		async_queue_disable(self->ports[0]->queue);
+		async_queue_disable(self->ports[1]->queue);
+	} else {
+		async_queue_enable(self->ports[0]->queue);
+		async_queue_enable(self->ports[1]->queue);
+	}
+}
+
+static inline void
 got_message(GstDspBase *self,
 	    struct dsp_msg *msg)
 {
@@ -358,8 +370,7 @@ pause_task(GstDspBase *self, GstFlowReturn status)
 	gst_pad_pause_task(self->srcpad);
 
 	/* avoid waiting for buffers that will never come */
-	async_queue_disable(self->ports[0]->queue);
-	async_queue_disable(self->ports[1]->queue);
+	dsp_unlock(self, TRUE);
 
 	/* there's a pending deferred EOS, it's now or never */
 	if (deferred_eos) {
@@ -835,8 +846,7 @@ gstdsp_got_error(GstDspBase *self,
 	gstdsp_post_error(self, message);
 
 	g_atomic_int_set(&self->status, GST_FLOW_ERROR);
-	async_queue_disable(self->ports[0]->queue);
-	async_queue_disable(self->ports[1]->queue);
+	dsp_unlock(self, TRUE);
 }
 
 static gpointer
@@ -1159,8 +1169,7 @@ gboolean gstdsp_reinit(GstDspBase *self)
 {
 	/* deinit */
 	g_atomic_int_set(&self->status, GST_FLOW_WRONG_STATE);
-	async_queue_disable(self->ports[0]->queue);
-	async_queue_disable(self->ports[1]->queue);
+	dsp_unlock(self, TRUE);
 
 	/* ends buffer recycling */
 	g_mutex_lock(self->pool_mutex);
@@ -1182,8 +1191,7 @@ gboolean gstdsp_reinit(GstDspBase *self)
 	/* init */
 	g_atomic_int_set(&self->status, GST_FLOW_OK);
 	self->done = FALSE;
-	async_queue_enable(self->ports[0]->queue);
-	async_queue_enable(self->ports[1]->queue);
+	dsp_unlock(self, FALSE);
 
 	return true;
 }
@@ -1293,8 +1301,7 @@ change_state(GstElement *element,
 	case GST_STATE_CHANGE_READY_TO_PAUSED:
 		self->status = GST_FLOW_OK;
 		self->done = FALSE;
-		async_queue_enable(self->ports[0]->queue);
-		async_queue_enable(self->ports[1]->queue);
+		dsp_unlock(self, FALSE);
 		self->deferred_eos = false;
 		self->eos = false;
 		self->last_ts = GST_CLOCK_TIME_NONE;
@@ -1302,8 +1309,7 @@ change_state(GstElement *element,
 
 	case GST_STATE_CHANGE_PAUSED_TO_READY:
 		g_atomic_int_set(&self->status, GST_FLOW_WRONG_STATE);
-		async_queue_disable(self->ports[0]->queue);
-		async_queue_disable(self->ports[1]->queue);
+		dsp_unlock(self, TRUE);
 		break;
 
 	default:
@@ -1638,8 +1644,7 @@ sink_event(GstDspBase *self,
 		ret = gst_pad_push_event(self->srcpad, event);
 		g_atomic_int_set(&self->status, GST_FLOW_WRONG_STATE);
 
-		async_queue_disable(self->ports[0]->queue);
-		async_queue_disable(self->ports[1]->queue);
+		dsp_unlock(self, TRUE);
 
 		gst_pad_pause_task(self->srcpad);
 
@@ -1658,8 +1663,7 @@ sink_event(GstDspBase *self,
 		g_mutex_unlock(self->ts_mutex);
 
 		g_atomic_int_set(&self->status, GST_FLOW_OK);
-		async_queue_enable(self->ports[0]->queue);
-		async_queue_enable(self->ports[1]->queue);
+		dsp_unlock(self, FALSE);
 
 		self->last_ts = GST_CLOCK_TIME_NONE;
 		self->next_ts = GST_CLOCK_TIME_NONE;
