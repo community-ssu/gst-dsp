@@ -1214,7 +1214,7 @@ get_eenf_dyn_params(GstDspIpp *self)
 	dmm_buffer_map(self->status_params);
 }
 
-static bool send_buffer(GstDspBase *base, struct td_buffer *tb)
+static GstFlowReturn send_buffer(GstDspBase *base, struct td_buffer *tb)
 {
 	GstDspIpp *self = GST_DSP_IPP(base);
 	bool ok;
@@ -1236,15 +1236,15 @@ static bool send_buffer(GstDspBase *base, struct td_buffer *tb)
 
 	ok = control_pipe(self);
 	if (!ok)
-		return ok;
+		return GST_FLOW_ERROR;
 
 	dmm_buffer_map(tb->data);
 
 	ok = queue_buffer(GST_DSP_IPP(base), tb);
 	if (!ok)
-		return ok;
+		return GST_FLOW_ERROR;
 
-	return flush_queue_buffer(self);
+	return flush_queue_buffer(self) ? GST_FLOW_OK : GST_FLOW_ERROR;
 }
 
 static bool send_play_message(GstDspBase *base)

@@ -32,7 +32,7 @@ enum {
 	GSTDSP_ERROR_BUSY,
 };
 
-static inline bool send_buffer(GstDspBase *self, struct td_buffer *tb);
+static inline GstFlowReturn send_buffer(GstDspBase *self, struct td_buffer *tb);
 
 static inline void
 map_buffer(GstDspBase *self,
@@ -1197,7 +1197,7 @@ map_buffer(GstDspBase *self,
 		tb->user_data = g_buf;
 }
 
-static inline bool send_buffer(GstDspBase *self, struct td_buffer *tb)
+static inline GstFlowReturn send_buffer(GstDspBase *self, struct td_buffer *tb)
 {
 	dsp_comm_t *msg_data;
 	du_port_t *port = tb->port;
@@ -1243,7 +1243,7 @@ static inline bool send_buffer(GstDspBase *self, struct td_buffer *tb)
 	dsp_send_message(self->dsp_handle, self->node,
 			 0x0600 | port->id, (uint32_t) tb->comm->map, 0);
 
-	return true;
+	return GST_FLOW_OK;
 }
 
 void

@@ -137,7 +137,7 @@ struct _GstDspBase {
 	void (*reset)(GstDspBase *base);
 	void (*flush_buffer)(GstDspBase *base);
 	void (*got_message)(GstDspBase *self, struct dsp_msg *msg);
-	bool (*send_buffer)(GstDspBase *self, struct td_buffer *tb);
+	GstFlowReturn (*send_buffer)(GstDspBase *self, struct td_buffer *tb);
 	bool (*send_play_message)(GstDspBase *self);
 	bool (*send_stop_message)(GstDspBase *self);
 	GstCaps *tmp_caps;
