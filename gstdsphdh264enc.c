@@ -18,6 +18,8 @@
 
 #define GST_CAT_DEFAULT gstdsp_debug
 
+#define DEFAULT_IDR_INTERVAL   (0)
+
 /*
  * H.264 supported levels
  * Source http://www.itu.int/rec/T-REC-H.264-201003-I/ page 294 - Annex A table A-1
@@ -44,6 +46,7 @@ enum {
 	ARG_BYTESTREAM,
 #endif
 	ARG_SLICE_SIZE_MB,
+	ARG_IDR_INTERVAL
 };
 
 static inline GstCaps *
@@ -73,6 +76,7 @@ instance_init(GTypeInstance *instance,
 
 	self->priv.h264.bytestream = true;
 	self->priv.h264.slice_size_mb = 0;
+	self->priv.h264.idr_interval = DEFAULT_IDR_INTERVAL;
 
 	self->supported_levels = levels;
 	self->nr_supported_levels = ARRAY_SIZE(levels);
@@ -118,6 +122,9 @@ set_property(GObject *obj,
 	case ARG_SLICE_SIZE_MB:
 		self->priv.h264.slice_size_mb = g_value_get_uint(value);
 		break;
+	case ARG_IDR_INTERVAL:
+		self->priv.h264.idr_interval = g_value_get_int(value);
+		break;
 	default:
 		G_OBJECT_WARN_INVALID_PROPERTY_ID(obj, prop_id, pspec);
 		break;
@@ -140,6 +147,9 @@ get_property(GObject *obj,
 #endif
 	case ARG_SLICE_SIZE_MB:
 		g_value_set_uint(value, self->priv.h264.slice_size_mb);
+		break;
+	case ARG_IDR_INTERVAL:
+		g_value_set_int(value, self->priv.h264.idr_interval);
 		break;
 	default:
 		G_OBJECT_WARN_INVALID_PROPERTY_ID(obj, prop_id, pspec);
@@ -168,6 +178,11 @@ class_init(gpointer g_class,
 				"Number of MB's per slice",
 				"Number of MacroBlocks in a slice (NAL unit)", 0, G_MAXUINT,
 				0, G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
+
+	g_object_class_install_property(gobject_class, ARG_IDR_INTERVAL,
+			g_param_spec_int("idr-interval", "idr-interval",
+				"Generate IDR frames at every specified intervals (seconds)",
+				0, G_MAXINT, DEFAULT_IDR_INTERVAL, G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
 }
 
 GType

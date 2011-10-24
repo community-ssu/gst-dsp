@@ -16,6 +16,7 @@
 
 #include "gstdspbase.h"
 #include "gstdspvenc.h"
+#include "util.h"
 
 /**
  * HD-H264Enc_create_args:
@@ -308,6 +309,21 @@ static void in_send_cb(GstDspBase *base, struct td_buffer *tb)
 		self->keyframe_event = NULL;
 	}
 	g_mutex_unlock(self->keyframe_mutex);
+	if (self->priv.h264.idr_interval) {
+		GstClockTime timestamp;
+		gint pos;
+
+		g_mutex_lock(base->ts_mutex);
+		pos = base->ts_in_pos ? base->ts_in_pos : ARRAY_SIZE(base->ts_array);
+		pos--;
+		timestamp = base->ts_array[pos].time;
+		g_mutex_unlock(base->ts_mutex);
+		if (self->priv.h264.last_idr + (guint) self->priv.h264.idr_interval * GST_SECOND < timestamp) {
+			pr_debug(self, "forcing IDR frame");
+			param->force_i_frame = 1;
+			self->priv.h264.last_idr = timestamp;
+		}
+	}
 }
 
 static void create_codec_data(GstDspBase *base)

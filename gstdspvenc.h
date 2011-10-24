@@ -30,6 +30,8 @@ union venc_priv_data {
 		gboolean sps_received, pps_received, codec_data_done;
 		GstBuffer *sps, *pps, *codec_data;
 		guint slice_size_mb;
+		gint idr_interval;
+		GstClockTime last_idr;
 	} h264;
 	struct {
 		gboolean codec_data_done;
