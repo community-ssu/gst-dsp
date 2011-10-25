@@ -1452,6 +1452,32 @@ static gboolean sink_setcaps(GstPad *pad, GstCaps *caps)
 		return FALSE;
 	}
 
+	if (gstdsp_need_node_reset(base, caps, self->width, self->height)) {
+
+		/* flush pending frames if needed */
+		if (base->flush_buffer) {
+			pr_debug(self, "flushing pending");
+			base->flush_buffer(base);
+		}
+
+		/* wait (some time) for all to have been pushed */
+		g_mutex_lock(base->ts_mutex);
+		while (base->ts_count > 0) {
+			GTimeVal tv = {1, 0};
+
+			if (!g_cond_timed_wait(base->ts_cond, base->ts_mutex, &tv)) {
+				pr_info(self, "timeout waiting for all buffers pushed");
+				break;
+			}
+		}
+		g_mutex_unlock(base->ts_mutex);
+
+		gstdsp_reinit(base);
+	}
+
+	if (base->node)
+		return TRUE;
+
 	gst_structure_get_fourcc(in_struc, "format", &format);
 
 	/* ipp output colour format is always UYVY */
