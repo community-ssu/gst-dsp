@@ -506,11 +506,7 @@ static void got_message(GstDspBase *base, struct dsp_msg *msg)
 		}
 		async_queue_push(p->queue, tb);
 
-		/* clear intermediate one, if any */
-		if (self->intermediate_buf) {
-			dmm_buffer_free(self->intermediate_buf);
-			self->intermediate_buf = NULL;
-		}
+		/* keep possible intermediate buffer around for re-use */
 
 		/* signal processing finished */
 		g_sem_up(self->sync_sem);
@@ -981,9 +977,21 @@ static bool queue_buffer(GstDspIpp *self, struct td_buffer *tb, struct td_buffer
 			queue_msg1->content_size = base->output_buffer_size;
 			queue_msg1->content_ptr = (uint32_t)self->out_buf_ptr->data->map;
 		} else {
-			dmm_buffer_t *b = ipp_calloc(self, base->input_buffer_size, DMA_FROM_DEVICE);
-			dmm_buffer_map(b);
-			self->intermediate_buf = b;
+			dmm_buffer_t *b = NULL;
+
+			if (self->intermediate_buf) {
+				if (self->intermediate_buf->size >= base->input_buffer_size) {
+					pr_debug(self, "re-using intermediate buffer");
+					b = self->intermediate_buf;
+				} else
+					dmm_buffer_free(self->intermediate_buf);
+			}
+			if (!b) {
+				pr_debug(self, "setting up intermediate buffer");
+				b = ipp_calloc(self, base->input_buffer_size, DMA_FROM_DEVICE);
+				dmm_buffer_map(b);
+				self->intermediate_buf = b;
+			}
 			queue_msg1->content_size_used = base->input_buffer_size;
 			queue_msg1->content_size = base->input_buffer_size;
 			queue_msg1->content_ptr = (uint32_t)b->map;
