@@ -460,6 +460,49 @@ process_event(GstDspBase *self, GstEvent *event, gboolean *drop)
 	return ret;
 }
 
+static GstFlowReturn
+push_events(GstDspBase *self)
+{
+	GstFlowReturn ret = GST_FLOW_OK;
+
+	g_mutex_lock(self->ts_mutex);
+	while ((self->ts_array[self->ts_out_pos].events)) {
+		GstEvent *event;
+		gboolean flush_buffer;
+		gboolean drop;
+
+		event = self->ts_array[self->ts_out_pos].events->data;
+		self->ts_array[self->ts_out_pos].events =
+			g_slist_delete_link(self->ts_array[self->ts_out_pos].events,
+					self->ts_array[self->ts_out_pos].events);
+		flush_buffer = (self->ts_out_pos != self->ts_push_pos);
+		/* 2 separate event entries in sequence should not happen, but anyway ... */
+		if (!self->ts_array[self->ts_out_pos].events)
+			self->ts_out_pos = (self->ts_out_pos + 1) % ARRAY_SIZE(self->ts_array);
+		if (G_LIKELY(!flush_buffer)) {
+			ret = process_event(self, event, &drop);
+			self->ts_push_pos = self->ts_out_pos;
+			if (GST_EVENT_TYPE(event) == GST_EVENT_NEWSEGMENT) {
+				self->last_ts = GST_CLOCK_TIME_NONE;
+				self->next_ts = GST_CLOCK_TIME_NONE;
+			}
+			if (G_UNLIKELY(drop)) {
+				pr_debug(self, "dropping event: %s", GST_EVENT_TYPE_NAME(event));
+				gst_event_unref(event);
+			} else {
+				pr_debug(self, "pushing event: %s", GST_EVENT_TYPE_NAME(event));
+				gst_pad_push_event(self->srcpad, event);
+			}
+		} else {
+			pr_debug(self, "ignored flushed event: %s", GST_EVENT_TYPE_NAME(event));
+			gst_event_unref(event);
+		}
+	}
+	g_mutex_unlock(self->ts_mutex);
+
+	return ret;
+}
+
 /* some typical familiar code ... */
 /* returns TRUE if buffer is within segment, else FALSE.
  * if Buffer is on segment border, it's timestamp and duration will be clipped */
@@ -526,7 +569,6 @@ output_loop(gpointer data)
 	gboolean flush_buffer;
 	gboolean got_eos = FALSE;
 	gboolean keyframe = FALSE;
-	GstEvent *event;
 	du_port_t *p;
 	struct td_buffer *tb;
 	bool handled;
@@ -573,38 +615,7 @@ output_loop(gpointer data)
 	g_mutex_unlock(self->ts_mutex);
 
 	/* first clear pending events */
-	g_mutex_lock(self->ts_mutex);
-	while ((self->ts_array[self->ts_out_pos].events)) {
-		gboolean drop;
-
-		event = self->ts_array[self->ts_out_pos].events->data;
-		self->ts_array[self->ts_out_pos].events =
-			g_slist_delete_link(self->ts_array[self->ts_out_pos].events,
-					self->ts_array[self->ts_out_pos].events);
-		flush_buffer = (self->ts_out_pos != self->ts_push_pos);
-		/* 2 separate event entries in sequence should not happen, but anyway ... */
-		if (!self->ts_array[self->ts_out_pos].events)
-			self->ts_out_pos = (self->ts_out_pos + 1) % ARRAY_SIZE(self->ts_array);
-		if (G_LIKELY(!flush_buffer)) {
-			ret = process_event(self, event, &drop);
-			self->ts_push_pos = self->ts_out_pos;
-			if (GST_EVENT_TYPE(event) == GST_EVENT_NEWSEGMENT) {
-				self->last_ts = GST_CLOCK_TIME_NONE;
-				self->next_ts = GST_CLOCK_TIME_NONE;
-			}
-			if (G_UNLIKELY(drop)) {
-				pr_debug(self, "dropping event: %s", GST_EVENT_TYPE_NAME(event));
-				gst_event_unref(event);
-			} else {
-				pr_debug(self, "pushing event: %s", GST_EVENT_TYPE_NAME(event));
-				gst_pad_push_event(self->srcpad, event);
-			}
-		} else {
-			pr_debug(self, "ignored flushed event: %s", GST_EVENT_TYPE_NAME(event));
-			gst_event_unref(event);
-		}
-	}
-	g_mutex_unlock(self->ts_mutex);
+	ret = push_events(self);
 	if (G_UNLIKELY(ret != GST_FLOW_OK))
 		goto leave;
 
@@ -1155,6 +1166,10 @@ gboolean gstdsp_reinit(GstDspBase *self)
 	g_mutex_lock(self->pool_mutex);
 	self->cycle++;
 	g_mutex_unlock(self->pool_mutex);
+
+	/* push optional remaining events */
+	gst_pad_pause_task(self->srcpad);
+	push_events(self);
 
 	if (!_dsp_stop(self))
 		gstdsp_post_error(self, "dsp stop failed");
