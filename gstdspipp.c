@@ -33,6 +33,7 @@ static GstDspBaseClass *parent_class;
 static bool send_stop_message(GstDspBase *base);
 static gboolean sink_event(GstDspBase *base, GstEvent *event);
 static void send_processing_info_gstmessage(GstDspIpp *self, const gchar* info);
+static GstCaps *getcaps(GstPad * pad);
 
 enum {
 	PROP_0,
@@ -1634,6 +1635,42 @@ leave:
 	return parent_class->sink_event(base, event);
 }
 
+static GstCaps *getcaps(GstPad * pad)
+{
+	GstDspBase *base = GST_DSP_BASE(GST_PAD_PARENT(pad));
+	GstPad *otherpad;
+	GstCaps *caps = NULL;
+
+	otherpad = (pad == base->srcpad) ? base->sinkpad : base->srcpad;
+
+	caps = gst_pad_peer_get_caps_reffed(otherpad);
+
+	if (caps) {
+		GstCaps *tmp_caps;
+		const GstCaps *pad_template_caps;
+
+		pad_template_caps = gst_pad_get_pad_template_caps(otherpad);
+		tmp_caps = gst_caps_intersect(caps, pad_template_caps);
+		gst_caps_unref(caps);
+
+		caps = tmp_caps;
+
+		pad_template_caps = gst_pad_get_pad_template_caps(pad);
+		tmp_caps = gst_caps_intersect(caps, pad_template_caps);
+		gst_caps_unref(caps);
+
+		caps = tmp_caps;
+	} else {
+		caps = gst_caps_copy(gst_pad_get_pad_template_caps(pad));
+	}
+
+	gchar *str = gst_caps_to_string(caps);
+	pr_debug(base, "returning caps: %s", str);
+	g_free(str);
+
+	return caps;
+}
+
 static void send_processing_info_gstmessage(GstDspIpp *self, const gchar* info)
 {
 	GstStructure *s;
@@ -1710,6 +1747,9 @@ static void instance_init(GTypeInstance *instance, gpointer g_class)
 	memcpy(&self->eenf_params, &eenf_normal, sizeof(eenf_normal));
 
 	gst_pad_set_setcaps_function(base->sinkpad, sink_setcaps);
+
+	gst_pad_set_getcaps_function(base->sinkpad, getcaps);
+	gst_pad_set_getcaps_function(base->srcpad, getcaps);
 }
 
 static void finalize(GObject *obj)
