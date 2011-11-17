@@ -416,8 +416,8 @@ sink_setcaps(GstPad *pad,
 		break;
 	case GSTDSP_HDMP4VENC:
 	case GSTDSP_HDH264ENC:
-		du_port_alloc_buffers(base->ports[0], 6);
-		du_port_alloc_buffers(base->ports[1], 8);
+		du_port_alloc_buffers(base->ports[0], 2);
+		du_port_alloc_buffers(base->ports[1], 4);
 		break;
 	default:
 		du_port_alloc_buffers(base->ports[0], 2);
