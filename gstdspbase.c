@@ -1541,6 +1541,12 @@ pad_chain(GstPad *pad,
 
 	pr_debug(self, "begin");
 
+	if (G_UNLIKELY(GST_BUFFER_SIZE(buf) == 0)) {
+		/* 0 size buffers are used for fast negotiation in 0.10 */
+		pr_debug(self, "Got buffer of size 0, unref and return");
+		goto leave;
+	}
+
 	if (self->pre_process_buffer)
 		self->pre_process_buffer(self, buf);
 
