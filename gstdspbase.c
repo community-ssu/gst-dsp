@@ -492,9 +492,6 @@ push_events(GstDspBase *self)
 			g_slist_delete_link(self->ts_array[self->ts_out_pos].events,
 					self->ts_array[self->ts_out_pos].events);
 		flush_buffer = (self->ts_out_pos != self->ts_push_pos);
-		/* 2 separate event entries in sequence should not happen, but anyway ... */
-		if (!self->ts_array[self->ts_out_pos].events)
-			self->ts_out_pos = (self->ts_out_pos + 1) % ARRAY_SIZE(self->ts_array);
 		if (G_LIKELY(!flush_buffer)) {
 			ret = process_event(self, event, &drop);
 			self->ts_push_pos = self->ts_out_pos;
@@ -1694,14 +1691,8 @@ sink_event(GstDspBase *self,
 
 			g_mutex_lock(self->ts_mutex);
 			pr_debug(self, "storing event");
-			/* check if previous position stores event, if so, add it to that list */
-			prev_pos = (self->ts_in_pos == 0) ?
-				ARRAY_SIZE(self->ts_array) - 1 : self->ts_in_pos - 1;
-			if (self->ts_array[prev_pos].events)
-				self->ts_in_pos = prev_pos;
 			self->ts_array[self->ts_in_pos].events =
 				g_slist_append(self->ts_array[self->ts_in_pos].events, event);
-			self->ts_in_pos = (self->ts_in_pos + 1) % ARRAY_SIZE(self->ts_array);
 			g_mutex_unlock(self->ts_mutex);
 		}
 		break;
