@@ -28,6 +28,10 @@ map_buffer(GstDspBase *self,
 	   GstBuffer *g_buf,
 	   struct td_buffer *tb);
 
+struct td_codec td_fake_codec = {
+	.uuid = NULL,
+};
+
 static inline long
 get_elapsed_eos(GstDspBase *self)
 {
