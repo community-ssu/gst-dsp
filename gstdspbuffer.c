@@ -53,12 +53,14 @@ static void finalize(GstMiniObject *obj)
 {
 	GstDspBuffer *dsp_buf = (GstDspBuffer *) obj;
 	GstDspBase *base = dsp_buf->base;
+	struct td_buffer *tb = dsp_buf->tb;
+
 	g_mutex_lock(base->pool_mutex);
 	/* note: in this order, as ->tb may no longer be around */
-	if (base->cycle == dsp_buf->cookie && dsp_buf->tb->pinned) {
+	if (base->cycle == dsp_buf->cookie && tb->pinned) {
 		if (G_UNLIKELY(g_atomic_int_get(&base->eos)))
-			dsp_buf->tb->clean = true;
-		base->send_buffer(base, dsp_buf->tb);
+			tb->clean = true;
+		base->send_buffer(base, tb);
 	}
 	g_mutex_unlock(base->pool_mutex);
 	gst_object_unref(base);
