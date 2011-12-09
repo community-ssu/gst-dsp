@@ -40,7 +40,7 @@ GstBuffer *gst_dsp_buffer_new(GstDspBase *base, struct td_buffer *tb)
 	GST_BUFFER_DATA(buf) = b->data;
 	GST_BUFFER_SIZE(buf) = b->len;
 	/* not to be messed with elsewhere while it's ours */
-	b->allocated_data = NULL;
+	b->allocated_data = b->data = NULL;
 	dsp_buf = (GstDspBuffer *) buf;
 	dsp_buf->tb = tb;
 	dsp_buf->base = gst_object_ref(base);
@@ -61,6 +61,9 @@ static void finalize(GstMiniObject *obj)
 	if (base->cycle == dsp_buf->cookie && tb->pinned) {
 		if (G_UNLIKELY(g_atomic_int_get(&base->eos)))
 			tb->clean = true;
+		g_assert(!tb->data->data);
+		g_assert(!tb->data->allocated_data);
+		tb->data->data = GST_BUFFER_DATA(dsp_buf);
 		tb->data->allocated_data = GST_BUFFER_MALLOCDATA(dsp_buf);
 		GST_BUFFER_MALLOCDATA(dsp_buf) = NULL;
 		base->send_buffer(base, tb);
