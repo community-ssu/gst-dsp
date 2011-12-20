@@ -440,12 +440,9 @@ do_timestamp(GstDspBase *self, GstBuffer *out_buf, GstClockTime timestamp, GstCl
 }
 
 /* to be called with ts_lock */
-static GstFlowReturn
-process_event(GstDspBase *self, GstEvent *event, gboolean *drop)
+static void
+process_event(GstDspBase *self, GstEvent *event)
 {
-	GstFlowReturn ret = GST_FLOW_OK;
-
-	*drop = FALSE;
 	switch (GST_EVENT_TYPE(event)) {
 	case GST_EVENT_NEWSEGMENT:
 	{
@@ -472,8 +469,6 @@ process_event(GstDspBase *self, GstEvent *event, gboolean *drop)
 	default:
 		break;
 	}
-
-	return ret;
 }
 
 static GstFlowReturn
@@ -487,25 +482,19 @@ push_events(GstDspBase *self)
 	while (*events) {
 		GstEvent *event;
 		gboolean flush_buffer;
-		gboolean drop;
 
 		event = (*events)->data;
 		*events = g_slist_delete_link(*events, *events);
 		flush_buffer = (self->ts_out_pos != self->ts_push_pos);
 		if (G_LIKELY(!flush_buffer)) {
-			ret = process_event(self, event, &drop);
+			process_event(self, event);
 			self->ts_push_pos = self->ts_out_pos;
 			if (GST_EVENT_TYPE(event) == GST_EVENT_NEWSEGMENT) {
 				self->last_ts = GST_CLOCK_TIME_NONE;
 				self->next_ts = GST_CLOCK_TIME_NONE;
 			}
-			if (G_UNLIKELY(drop)) {
-				pr_debug(self, "dropping event: %s", GST_EVENT_TYPE_NAME(event));
-				gst_event_unref(event);
-			} else {
-				pr_debug(self, "pushing event: %s", GST_EVENT_TYPE_NAME(event));
-				gst_pad_push_event(self->srcpad, event);
-			}
+			pr_debug(self, "pushing event: %s", GST_EVENT_TYPE_NAME(event));
+			gst_pad_push_event(self->srcpad, event);
 		} else {
 			pr_debug(self, "ignored flushed event: %s", GST_EVENT_TYPE_NAME(event));
 			gst_event_unref(event);
