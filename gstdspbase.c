@@ -471,21 +471,20 @@ process_event(GstDspBase *self, GstEvent *event)
 	}
 }
 
-static GstFlowReturn
+static void
 push_events(GstDspBase *self)
 {
-	GstFlowReturn ret = GST_FLOW_OK;
 	GSList **events;
+	gboolean flush_buffer;
 
 	g_mutex_lock(self->ts_mutex);
 	events = &self->ts_array[self->ts_out_pos].events;
+	flush_buffer = (self->ts_out_pos != self->ts_push_pos);
 	while (*events) {
 		GstEvent *event;
-		gboolean flush_buffer;
 
 		event = (*events)->data;
 		*events = g_slist_delete_link(*events, *events);
-		flush_buffer = (self->ts_out_pos != self->ts_push_pos);
 		if (G_LIKELY(!flush_buffer)) {
 			process_event(self, event);
 			self->ts_push_pos = self->ts_out_pos;
@@ -501,8 +500,6 @@ push_events(GstDspBase *self)
 		}
 	}
 	g_mutex_unlock(self->ts_mutex);
-
-	return ret;
 }
 
 /* some typical familiar code ... */
@@ -617,9 +614,7 @@ output_loop(gpointer data)
 	g_mutex_unlock(self->ts_mutex);
 
 	/* first clear pending events */
-	ret = push_events(self);
-	if (G_UNLIKELY(ret != GST_FLOW_OK))
-		goto leave;
+	push_events(self);
 
 	/* a pending reallocation from the previous run */
 	if (G_UNLIKELY(!b->data)) {
