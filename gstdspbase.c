@@ -464,6 +464,10 @@ process_event(GstDspBase *self, GstEvent *event)
 			gst_segment_init(&self->segment, GST_FORMAT_UNDEFINED);
 		gst_segment_set_newsegment_full(&self->segment, update, rate, arate,
 				format, start, stop, time);
+
+		self->last_ts = GST_CLOCK_TIME_NONE;
+		self->next_ts = GST_CLOCK_TIME_NONE;
+
 		break;
 	}
 	default:
@@ -488,10 +492,6 @@ push_events(GstDspBase *self)
 		if (G_LIKELY(!flush_buffer)) {
 			process_event(self, event);
 			self->ts_push_pos = self->ts_out_pos;
-			if (GST_EVENT_TYPE(event) == GST_EVENT_NEWSEGMENT) {
-				self->last_ts = GST_CLOCK_TIME_NONE;
-				self->next_ts = GST_CLOCK_TIME_NONE;
-			}
 			pr_debug(self, "pushing event: %s", GST_EVENT_TYPE_NAME(event));
 			gst_pad_push_event(self->srcpad, event);
 		} else {
