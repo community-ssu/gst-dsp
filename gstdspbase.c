@@ -444,8 +444,7 @@ static void
 process_event(GstDspBase *self, GstEvent *event)
 {
 	switch (GST_EVENT_TYPE(event)) {
-	case GST_EVENT_NEWSEGMENT:
-	{
+	case GST_EVENT_NEWSEGMENT: {
 		GstFormat format;
 		gdouble rate, arate;
 		gint64 start, stop, time;
@@ -459,6 +458,7 @@ process_event(GstDspBase *self, GstEvent *event)
 				start, stop, time);
 		GST_DEBUG_OBJECT(self, "applying format %d newsegment %" GST_SEGMENT_FORMAT, format,
 				&segment);
+
 		/* avoid (unlikely) format complaints */
 		if (format != self->segment.format)
 			gst_segment_init(&self->segment, GST_FORMAT_UNDEFINED);
