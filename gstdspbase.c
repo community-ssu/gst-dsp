@@ -480,17 +480,17 @@ static GstFlowReturn
 push_events(GstDspBase *self)
 {
 	GstFlowReturn ret = GST_FLOW_OK;
+	GSList **events;
 
 	g_mutex_lock(self->ts_mutex);
-	while ((self->ts_array[self->ts_out_pos].events)) {
+	events = &self->ts_array[self->ts_out_pos].events;
+	while (*events) {
 		GstEvent *event;
 		gboolean flush_buffer;
 		gboolean drop;
 
-		event = self->ts_array[self->ts_out_pos].events->data;
-		self->ts_array[self->ts_out_pos].events =
-			g_slist_delete_link(self->ts_array[self->ts_out_pos].events,
-					self->ts_array[self->ts_out_pos].events);
+		event = (*events)->data;
+		*events = g_slist_delete_link(*events, *events);
 		flush_buffer = (self->ts_out_pos != self->ts_push_pos);
 		if (G_LIKELY(!flush_buffer)) {
 			ret = process_event(self, event, &drop);
@@ -1101,10 +1101,11 @@ _dsp_stop(GstDspBase *self)
 	}
 
 	for (i = 0; i < ARRAY_SIZE(self->ts_array); i++) {
-		if (self->ts_array[i].events) {
-			g_slist_foreach(self->ts_array[i].events, (GFunc) gst_event_unref, NULL);
-			g_slist_free(self->ts_array[i].events);
-			self->ts_array[i].events = NULL;
+		GSList **events = &self->ts_array[i].events;
+		if (*events) {
+			g_slist_foreach(*events, (GFunc) gst_event_unref, NULL);
+			g_slist_free(*events);
+			*events = NULL;
 		}
 	}
 	self->ts_in_pos = self->ts_out_pos = self->ts_push_pos = 0;
@@ -1687,12 +1688,12 @@ sink_event(GstDspBase *self,
 		if (!GST_EVENT_IS_SERIALIZED(event)) {
 			ret = gst_pad_push_event(self->srcpad, event);
 		} else {
-			gint prev_pos;
+			GSList **events;
 
 			g_mutex_lock(self->ts_mutex);
 			pr_debug(self, "storing event");
-			self->ts_array[self->ts_in_pos].events =
-				g_slist_append(self->ts_array[self->ts_in_pos].events, event);
+			events = &self->ts_array[self->ts_in_pos].events;
+			*events = g_slist_append(*events, event);
 			g_mutex_unlock(self->ts_mutex);
 		}
 		break;
