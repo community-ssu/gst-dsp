@@ -1647,12 +1647,25 @@ sink_event(GstDspBase *self,
 
 		break;
 
-	case GST_EVENT_FLUSH_STOP:
+	case GST_EVENT_FLUSH_STOP: {
+		GSList **events;
 		ret = gst_pad_push_event(self->srcpad, event);
 
 		g_atomic_int_set(&self->eos, false);
 
 		g_mutex_lock(self->ts_mutex);
+
+		/*
+		 * Flush the current list of pending events, just in case
+		 * somebody is doing something crazy.
+		 */
+		events = &self->ts_array[self->ts_in_pos].events;
+		if (*events) {
+			g_slist_foreach(*events, (GFunc) gst_event_unref, NULL);
+			g_slist_free(*events);
+			*events = NULL;
+		}
+
 		self->ts_push_pos = self->ts_in_pos;
 		pr_debug(self, "flushing next %u buffer(s)",
 			 self->ts_push_pos - self->ts_out_pos);
@@ -1660,13 +1673,14 @@ sink_event(GstDspBase *self,
 		g_mutex_unlock(self->ts_mutex);
 
 		g_atomic_int_set(&self->status, GST_FLOW_OK);
+
 		dsp_unlock(self, FALSE);
 
 		self->last_ts = GST_CLOCK_TIME_NONE;
 		self->next_ts = GST_CLOCK_TIME_NONE;
 		gst_pad_start_task(self->srcpad, output_loop, self->srcpad);
 		break;
-
+	}
 	default:
 		if (!GST_EVENT_IS_SERIALIZED(event)) {
 			ret = gst_pad_push_event(self->srcpad, event);
