@@ -491,7 +491,6 @@ push_events(GstDspBase *self)
 		*events = g_slist_delete_link(*events, *events);
 		if (G_LIKELY(!flush_buffer)) {
 			process_event(self, event);
-			self->ts_push_pos = self->ts_out_pos;
 			pr_debug(self, "pushing event: %s", GST_EVENT_TYPE_NAME(event));
 			gst_pad_push_event(self->srcpad, event);
 		} else {
