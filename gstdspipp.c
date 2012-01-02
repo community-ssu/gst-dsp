@@ -575,6 +575,9 @@ static bool send_msg(GstDspIpp *self, int id,
 
 	ipp_buffer_begin(self);
 
+	if (id == DFGM_QUEUE_BUFF)
+		send_processing_info_gstmessage(self, "ipp-start-processing");
+
 	return dsp_send_message(base->dsp_handle, base->node, id,
 				arg1 ? (uint32_t)arg1->map : 0,
 				arg2 ? (uint32_t)arg2->map : 0);
