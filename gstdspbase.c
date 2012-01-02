@@ -691,7 +691,16 @@ output_loop(gpointer data)
 		GST_BUFFER_SIZE(out_buf) = b->len;
 	}
 	else {
-		out_buf = gst_dsp_buffer_new(self, tb);
+		/* this should only happen in overwrite ipp case */
+		if (G_UNLIKELY(tb->user_data && !tb->pinned)) {
+			/* let's make sure */
+			g_assert(GST_IS_DSP_IPP(self));
+			g_assert(self->use_pinned);
+			out_buf = tb->user_data;
+			tb->user_data = NULL;
+			pr_debug(self, "re-using output buffer %p", out_buf);
+		} else
+			out_buf = gst_dsp_buffer_new(self, tb);
 
 		if (!self->use_pinned)
 			/* invalidate data to force reallocation */

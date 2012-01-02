@@ -27,8 +27,7 @@ static GstDspBaseClass *parent_class;
 #define INTERNAL_FORMAT IPP_YUV_420P
 #endif
 
-/* not quite recommended at present */
-/* #define OVERWRITE_INPUT_BUFFER */
+#define OVERWRITE_INPUT_BUFFER  1
 
 static bool send_stop_message(GstDspBase *base);
 static gboolean sink_event(GstDspBase *base, GstEvent *event);
@@ -486,14 +485,21 @@ static void got_message(GstDspBase *base, struct dsp_msg *msg)
 		struct td_buffer *tb;
 
 #ifdef OVERWRITE_INPUT_BUFFER
-		dmm_buffer_t *input_data = self->in_buf_ptr->data;
-		dmm_buffer_t *output_data = self->out_buf_ptr->data;
-		tb = self->out_buf_ptr;
-		if (self->nr_algos & 0x01)
-			tb->data = input_data;
-#else
-		tb = self->out_buf_ptr;
+		if (self->nr_algos & 0x01) {
+			/* so, output has ended up in input */
+			/* expect to find input buffer ref here */
+			g_assert(self->in_buf_ptr->user_data);
+			/* hand it over to the output, which should have no ref there,
+			 * output_loop will pick it up and push downstream */
+			g_assert(self->out_buf_ptr->user_data == NULL);
+			self->out_buf_ptr->user_data = self->in_buf_ptr->user_data;
+			self->in_buf_ptr->user_data = NULL;
+			/* arrange for output_loop to send it back to us at once */
+			self->out_buf_ptr->pinned = FALSE;
+			tb = self->out_buf_ptr;
+		}
 #endif
+		tb = self->out_buf_ptr;
 		tb->data->len = base->output_buffer_size;
 		async_queue_push(p->queue, tb);
 
