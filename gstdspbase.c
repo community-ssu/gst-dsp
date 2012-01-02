@@ -1589,6 +1589,8 @@ next:
 	if (b->need_copy) {
 		pr_info(self, "copy");
 		memcpy(b->data, GST_BUFFER_DATA(buf), GST_BUFFER_SIZE(buf));
+                /* clear state for next time decision */
+                b->need_copy = false;
 	}
 
 	g_mutex_lock(self->ts_mutex);
