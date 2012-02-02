@@ -21,6 +21,14 @@ static GstDspBaseClass *parent_class;
 #define MAX_HEIGHT 3072
 #define MAX_TOTAL_PIXEL (4000 * 3008)
 
+#ifndef gst_pad_get_caps_reffed
+#define gst_pad_get_caps_reffed(p) gst_pad_get_caps(p)
+#endif
+
+#ifndef gst_pad_peer_get_caps_reffed
+#define gst_pad_peer_get_caps_reffed(p) gst_pad_peer_get_caps(p)
+#endif
+
 #if SN_API == 0
 #define INTERNAL_FORMAT IPP_YUV_422P
 #else
@@ -187,7 +195,7 @@ get_star_params(GstDspIpp *self)
 
 	algo->in = tmp;
 
-	tmp = ipp_calloc(self, sizeof(*out_args), DMA_BIDIRECTIONAL);
+	tmp = ipp_calloc(self, sizeof(*out_args), DMA_TO_DEVICE);
 	out_args = tmp->data;
 	out_args->size = sizeof(*out_args);
 	dmm_buffer_map(tmp);
@@ -260,7 +268,7 @@ get_yuvc_params(GstDspIpp *self, int in_fmt, int out_fmt)
 
 	algo->in = tmp;
 
-	tmp = ipp_calloc(self, sizeof(*out_args), DMA_BIDIRECTIONAL);
+	tmp = ipp_calloc(self, sizeof(*out_args), DMA_TO_DEVICE);
 	out_args = tmp->data;
 	out_args->size = sizeof(*out_args);
 	dmm_buffer_map(tmp);
@@ -321,7 +329,7 @@ get_crcbs_params(GstDspIpp *self)
 
 	algo->in = tmp;
 
-	tmp = ipp_calloc(self, sizeof(*out_args), DMA_BIDIRECTIONAL);
+	tmp = ipp_calloc(self, sizeof(*out_args), DMA_TO_DEVICE);
 	out_args = tmp->data;
 	out_args->size = sizeof(*out_args);
 	dmm_buffer_map(tmp);
@@ -398,7 +406,7 @@ get_eenf_params(GstDspIpp *self)
 
 	algo->in = tmp;
 
-	tmp = ipp_calloc(self, sizeof(*out_args), DMA_BIDIRECTIONAL);
+	tmp = ipp_calloc(self, sizeof(*out_args), DMA_TO_DEVICE);
 	out_args = tmp->data;
 	out_args->size = sizeof(*out_args);
 	dmm_buffer_map(tmp);
@@ -923,7 +931,7 @@ static bool control_pipe(GstDspIpp *self)
 
 	dmm_buffer_map(b_msg_1);
 
-	b_msg_2 = ipp_calloc(self, sizeof(*msg_2), DMA_BIDIRECTIONAL);
+	b_msg_2 = ipp_calloc(self, sizeof(*msg_2), DMA_TO_DEVICE);
 	msg_2 = b_msg_2->data;
 	tbl_size = (sizeof(msg_2->error_tables) / MAX_ALGS) * nr_algos;
 	msg_2->size = 2 * sizeof(uint32_t) + tbl_size;
