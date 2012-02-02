@@ -81,7 +81,11 @@ static void create_args(GstDspBase *base, unsigned *profile_id, void **arg_data)
 		.qpi_frame = 28,
 		.profile = 66, /* Baseline profile */
 		.level = self->level,
+#ifdef MAEMO_5
+		.nal_mode = self->priv.h264.bytestream ? 0 : 1, /* 0 == bytestream, 1 == NALU, 2 == bytestream, with NALU sizes */
+#else
 		.nal_mode = self->priv.h264.bytestream ? 2 : 1, /* 0 == bytestream, 1 == NALU, 2 == bytestream, with NALU sizes */
+#endif
 		.encoding_preset = 3,
 	};
 
