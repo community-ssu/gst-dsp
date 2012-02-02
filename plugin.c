@@ -42,7 +42,7 @@ plugin_init(GstPlugin *plugin)
 	if (!gst_element_register(plugin, "dspjpegenc", GST_RANK_PRIMARY + 1, GST_DSP_JPEGENC_TYPE))
 		return FALSE;
 
-	if (!gst_element_register(plugin, "dsph264enc", GST_RANK_SECONDARY, GST_DSP_H264ENC_TYPE))
+	if (!gst_element_register(plugin, "dsph264enc", GST_RANK_PRIMARY + 1, GST_DSP_H264ENC_TYPE))
 		return FALSE;
 
 	if (!gst_element_register(plugin, "dspvpp", GST_RANK_PRIMARY, GST_DSP_VPP_TYPE))
@@ -51,10 +51,10 @@ plugin_init(GstPlugin *plugin)
 	if (!gst_element_register(plugin, "dspipp", GST_RANK_PRIMARY + 1, GST_DSP_IPP_TYPE))
 		return FALSE;
 
-	if (!gst_element_register(plugin, "dsphdmp4venc", GST_RANK_PRIMARY + 1, GST_DSP_HD_MP4VENC_TYPE))
+	if (!gst_element_register(plugin, "dspmp4venc", GST_RANK_PRIMARY + 1, GST_DSP_HD_MP4VENC_TYPE))
 		return FALSE;
 
-	if (!gst_element_register(plugin, "dsphdh264enc", GST_RANK_PRIMARY + 1, GST_DSP_HD_H264ENC_TYPE))
+	if (!gst_element_register(plugin, "dsphdh264enc", GST_RANK_SECONDARY, GST_DSP_HD_H264ENC_TYPE))
 		return FALSE;
 
 	return TRUE;
