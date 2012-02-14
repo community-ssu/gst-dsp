@@ -677,8 +677,6 @@ output_loop(gpointer data)
 		if (tb->user_data) {
 			out_buf = tb->user_data;
 			tb->user_data = NULL;
-			map_buffer(self, new_buf, tb);
-			gst_buffer_unref(new_buf);
 		}
 		else
 			out_buf = new_buf;
@@ -689,6 +687,11 @@ output_loop(gpointer data)
 		}
 
 		GST_BUFFER_SIZE(out_buf) = b->len;
+
+		if (out_buf != new_buf) {
+			map_buffer(self, new_buf, tb);
+			gst_buffer_unref(new_buf);
+		}
 	}
 	else {
 		/* this should only happen in overwrite ipp case */
