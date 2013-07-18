@@ -195,20 +195,35 @@ codec_fixup(GstDspVDec *self)
 
 	switch (base->alg) {
 	case GSTDSP_MPEG4VDEC:
-		if (self->width * self->height > 864 * 480) {
+		if ( sn_exist(td_hdmp4vdec_codec.filename) && (self->width * self->height > 864 * 480)) {
 			base->alg = GSTDSP_HDMPEG4VDEC;
 			base->codec = &td_hdmp4vdec_codec;
 		}
 		break;
 	case GSTDSP_H263DEC:
-		if (self->profile == 1) {
+		if (sn_exist(td_hdmp4vdec_codec.filename) && self->profile == 1) {
 			base->alg = GSTDSP_HDMPEG4VDEC;
 			base->codec = &td_hdmp4vdec_codec;
+		}
+		break;
+	case GSTDSP_HDMPEG4VDEC:
+		if(!sn_exist(td_hdmp4vdec_codec.filename))
+		{
+			base->alg = GSTDSP_MPEG4VDEC;
+			base->codec = &td_mp4vdec_codec;
+		}
+		break;
+	case GSTDSP_HDH264VDEC:
+		if(!sn_exist(td_hdh264dec_hp_codec.filename))
+		{
+			base->alg = GSTDSP_H264DEC;
+			base->codec = &td_h264dec_codec;
 		}
 		break;
 	default:
 		break;
 	}
+	
 }
 
 static void *
@@ -273,6 +288,15 @@ create_node(GstDspBase *base)
 		/* SN_API == 0 doesn't have it, so don't fail */
 		(void) gstdsp_register(dsp_handle, &conversions_uuid, DSP_DCD_LIBRARYTYPE, "conversions.dll64P");
 	}
+	
+	if(sn_exist("conversions.dll64P"))
+#if SN_API >= 2
+		base->sn_api=2;
+#else
+		base->sn_api=1;
+#endif
+	else
+		base->sn_api=0;
 
 	if (!gstdsp_register(dsp_handle, codec->uuid, DSP_DCD_LIBRARYTYPE, codec->filename)) {
 		pr_err(self, "failed to register algo node library");

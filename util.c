@@ -8,10 +8,10 @@
  * packaging of this file.
  */
 
-#include "util.h"
-
 #include <glib.h>
 #include <gst/gst.h>
+
+#include "util.h"
 
 bool gstdsp_register(int dsp_handle,
 		     const struct dsp_uuid *uuid,

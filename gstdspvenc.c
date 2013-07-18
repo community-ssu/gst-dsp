@@ -124,6 +124,15 @@ create_node(GstDspVEnc *self)
 		/* SN_API == 0 doesn't have it, so don't fail */
 		(void) gstdsp_register(dsp_handle, &conversions_uuid, DSP_DCD_LIBRARYTYPE, "conversions.dll64P");
 	}
+	
+	if(sn_exist("conversions.dll64P"))
+#if SN_API >= 2
+		base->sn_api=2;
+#else
+		base->sn_api=1;
+#endif
+	else
+		base->sn_api=0;
 
 	{
 		struct dsp_node_attr_in attrs = {

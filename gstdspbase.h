@@ -154,6 +154,7 @@ struct _GstDspBase {
 	/* hacks */
 	guint skip_hack; /* don't push x number of buffers */
 	guint skip_hack_2; /* don't process x number of buffers */
+	guint sn_api;
 };
 
 struct _GstDspBaseClass {

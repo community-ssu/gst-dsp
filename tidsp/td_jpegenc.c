@@ -66,25 +66,48 @@ static void create_args(GstDspBase *base, unsigned *profile_id, void **arg_data)
 }
 
 struct dyn_params {
-	uint32_t size;
-	uint32_t num_au; /* set to 0 */
-	uint32_t color_format;
-	uint32_t height;
-	uint32_t width;
-	uint32_t capture_width;
-	uint32_t gen_header;
-	uint32_t quality;
-
-	uint32_t capture_height;
-	uint32_t dri_interval;
-	uint32_t huffman_table;
-	uint32_t quant_table;
-
-#if SN_API > 0
-	/* apparently only sizes 32 and 52 work. */
-	uint32_t resize;
-#endif
+	union {
+		struct {
+			uint32_t size;
+			uint32_t num_au; /* set to 0 */
+			uint32_t color_format;
+			uint32_t height;
+			uint32_t width;
+			uint32_t capture_width;
+			uint32_t gen_header;
+			uint32_t quality;
+		
+			uint32_t capture_height;
+			uint32_t dri_interval;
+			uint32_t huffman_table;
+			uint32_t quant_table;
+		}v0;
+		struct {
+			uint32_t size;
+			uint32_t num_au; /* set to 0 */
+			uint32_t color_format;
+			uint32_t height;
+			uint32_t width;
+			uint32_t capture_width;
+			uint32_t gen_header;
+			uint32_t quality;
+		
+			uint32_t capture_height;
+			uint32_t dri_interval;
+			uint32_t huffman_table;
+			uint32_t quant_table;
+		
+			/* apparently only sizes 32 and 52 work. */
+			uint32_t resize;
+		}v1;
+	}ver;
 };
+
+#define DYN_PARAMS_VER(base,dyn_params,value) \
+	(*(base->sn_api?&(dyn_params->ver.v1.value):&(dyn_params->ver.v0.value)))
+
+#define DYN_PARAMS_SIZE_VER(base,dyn_params) \
+	(base->sn_api?sizeof(dyn_params->ver.v1):sizeof(dyn_params->ver.v0))
 
 static void send_params(GstDspBase *base, struct dsp_node *node)
 {
@@ -93,17 +116,17 @@ static void send_params(GstDspBase *base, struct dsp_node *node)
 	GstDspVEnc *self = GST_DSP_VENC(base);
 
 	b = dmm_buffer_calloc(base->dsp_handle, base->proc,
-			sizeof(*params), DMA_TO_DEVICE);
+			DYN_PARAMS_SIZE_VER(base,params), DMA_TO_DEVICE);
 
 	params = b->data;
-	params->size = sizeof(*params);
-	params->color_format = (self->color_format == GST_MAKE_FOURCC('U','Y','V','Y') ? 4 : 1);
-	params->width = self->width;
-	params->height = self->height;
-	params->capture_width = self->width;
-	params->quality = self->quality;
+	DYN_PARAMS_VER(base,params,size) = DYN_PARAMS_SIZE_VER(base,params);
+	DYN_PARAMS_VER(base,params,color_format) = (self->color_format == GST_MAKE_FOURCC('U','Y','V','Y') ? 4 : 1);
+	DYN_PARAMS_VER(base,params,width) = self->width;
+	DYN_PARAMS_VER(base,params,height) = self->height;
+	DYN_PARAMS_VER(base,params,capture_width) = self->width;
+	DYN_PARAMS_VER(base,params,quality) = self->quality;
 
-	params->capture_height = self->height;
+	DYN_PARAMS_VER(base,params,capture_height) = self->height;
 
 	gstdsp_send_alg_ctrl(base, base->node, b);
 }

@@ -160,29 +160,53 @@ g_sem_reset(GSem *sem,
 }
 
 typedef struct {
-	uint32_t buffer_data;
-	uint32_t buffer_size;
-	uint32_t param_data;
-	uint32_t param_size;
-	uint32_t buffer_len;
-	uint32_t silly_eos;
-	uint32_t silly_buf_state;
-	uint32_t silly_buf_active;
-	uint32_t silly_buf_id;
-#if SN_API >= 2
-	uint32_t nb_available_buf;
-	uint32_t donot_flush_buf;
-	uint32_t donot_invalidate_buf;
-#endif
-	uint32_t reserved;
-	uint32_t msg_virt;
-	uint32_t buffer_virt;
-	uint32_t param_virt;
-	uint32_t silly_out_buffer_index;
-	uint32_t silly_in_buffer_index;
-	uint32_t user_data;
-	uint32_t stream_id;
+	union {
+		struct {
+			uint32_t buffer_data;
+			uint32_t buffer_size;
+			uint32_t param_data;
+			uint32_t param_size;
+			uint32_t buffer_len;
+			uint32_t silly_eos;
+			uint32_t silly_buf_state;
+			uint32_t silly_buf_active;
+			uint32_t silly_buf_id;
+			uint32_t nb_available_buf;
+			uint32_t donot_flush_buf;
+			uint32_t donot_invalidate_buf;
+			uint32_t reserved;
+			uint32_t msg_virt;
+			uint32_t buffer_virt;
+			uint32_t param_virt;
+			uint32_t silly_out_buffer_index;
+			uint32_t silly_in_buffer_index;
+			uint32_t user_data;
+			uint32_t stream_id;
+		}v2;
+		struct {
+			uint32_t buffer_data;
+			uint32_t buffer_size;
+			uint32_t param_data;
+			uint32_t param_size;
+			uint32_t buffer_len;
+			uint32_t silly_eos;
+			uint32_t silly_buf_state;
+			uint32_t silly_buf_active;
+			uint32_t silly_buf_id;
+			uint32_t reserved;
+			uint32_t msg_virt;
+			uint32_t buffer_virt;
+			uint32_t param_virt;
+			uint32_t silly_out_buffer_index;
+			uint32_t silly_in_buffer_index;
+			uint32_t user_data;
+			uint32_t stream_id;
+		}v0;
+	}ver;
 } dsp_comm_t;
+
+#define DSP_COMM_VER(self,dsp_comm,value) \
+	*((self->sn_api>=2)?&(dsp_comm->ver.v2.value):&(dsp_comm->ver.v0.value))
 
 static GstElementClass *parent_class;
 
@@ -245,8 +269,8 @@ got_message(GstDspBase *self,
 		dmm_buffer_end(tb->comm, tb->comm->size);
 
 		msg_data = tb->comm->data;
-		b = (void *) msg_data->user_data;
-		b->len = msg_data->buffer_len;
+		b = (void *) DSP_COMM_VER(self,msg_data,user_data);
+		b->len = DSP_COMM_VER(self,msg_data,buffer_len);
 
 		if (G_UNLIKELY(b->len > b->size))
 			g_error("wrong buffer size");
@@ -256,7 +280,7 @@ got_message(GstDspBase *self,
 		else
 			dmm_buffer_unmap(b);
 
-		param = (void *) msg_data->param_virt;
+		param = (void *) DSP_COMM_VER(self,msg_data,param_virt);
 		if (param)
 			dmm_buffer_end(param, param->size);
 
@@ -856,7 +880,7 @@ dsp_thread(gpointer data)
 	while (!self->done) {
 		unsigned int index = 0;
 		pr_debug(self, "waiting for events");
-		if (!dsp_wait_for_events(self->dsp_handle, self->events, 3, &index, 1000)) {
+		if (!dsp_wait_for_events(self->dsp_handle, self->events, 3, &index, 10000)) {
 			int dsp_error = GSTDSP_ERROR_OTHER;
 			if (errno == ETIME) {
 				long elapsed = get_elapsed_eos(self);
@@ -1037,7 +1061,11 @@ gstdsp_start(GstDspBase *self)
 	self->dsp_thread = g_thread_create(dsp_thread, self, TRUE, NULL);
 	gst_pad_start_task(self->srcpad, output_loop, self->srcpad);
 
-	self->send_play_message(self);
+	if(!self->send_play_message(self))
+	{
+		pr_err(self, "failed to send play message");
+		return false;
+	}
 
 	setup_buffers(self);
 
@@ -1231,17 +1259,17 @@ static inline GstFlowReturn send_buffer(GstDspBase *self, struct td_buffer *tb)
 
 	memset(msg_data, 0, sizeof(*msg_data));
 
-	msg_data->buffer_data = (uint32_t) buffer->map;
-	msg_data->buffer_size = buffer->size;
-	msg_data->stream_id = port->id;
-	msg_data->buffer_len = index == 0 ? buffer->len : 0;
+	DSP_COMM_VER(self,msg_data,buffer_data) = (uint32_t) buffer->map;
+	DSP_COMM_VER(self,msg_data,buffer_size) = buffer->size;
+	DSP_COMM_VER(self,msg_data,stream_id) = port->id;
+	DSP_COMM_VER(self,msg_data,buffer_len) = index == 0 ? buffer->len : 0;
 
-	msg_data->user_data = (uint32_t) buffer;
+	DSP_COMM_VER(self,msg_data,user_data) = (uint32_t) buffer;
 
 	if (tb->params) {
-		msg_data->param_data = (uint32_t) tb->params->map;
-		msg_data->param_size = tb->params->len;
-		msg_data->param_virt = (uint32_t) tb->params;
+		DSP_COMM_VER(self,msg_data,param_data) = (uint32_t) tb->params->map;
+		DSP_COMM_VER(self,msg_data,param_size) = tb->params->len;
+		DSP_COMM_VER(self,msg_data,param_virt) = (uint32_t) tb->params;
 	}
 
 	dmm_buffer_begin(tb->comm, sizeof(*msg_data));
@@ -1800,7 +1828,7 @@ instance_init(GTypeInstance *instance,
 	self->ts_cond = g_cond_new();
 
 	self->flush = g_sem_new(0);
-	self->eos_timeout = 1000;
+	self->eos_timeout = 10000;
 
 	gst_segment_init(&self->segment, GST_FORMAT_UNDEFINED);
 }

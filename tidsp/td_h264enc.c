@@ -160,20 +160,33 @@ struct in_params {
 };
 
 struct out_params {
-	uint32_t bitstream_size;
-	int32_t frame_type;
-	uint32_t nalus_per_frame;
-#if SN_API >= 1
-	uint32_t nalu_sizes[240];
-#else
-	uint32_t nalu_sizes[1618];
-#endif
-	uint32_t frame_index; /* Gives the number of the input frame which NAL unit belongs */
-	uint32_t nalu_index; /* Number of current NAL unit inside the frame */
-#if SN_API >= 1
-	int32_t error_code;
-#endif
+	union {
+		struct {
+			uint32_t bitstream_size;
+			int32_t frame_type;
+			uint32_t nalus_per_frame;
+			uint32_t nalu_sizes[1618];
+			uint32_t frame_index; /* Gives the number of the input frame which NAL unit belongs */
+			uint32_t nalu_index; /* Number of current NAL unit inside the frame */
+		}v0;
+		struct {
+			uint32_t bitstream_size;
+			int32_t frame_type;
+			uint32_t nalus_per_frame;
+			uint32_t nalu_sizes[240];
+			uint32_t frame_index; /* Gives the number of the input frame which NAL unit belongs */
+			uint32_t nalu_index; /* Number of current NAL unit inside the frame */
+			int32_t error_code;
+		}v1;
+	} ver;
 };
+
+#define OUT_PARAMS_VER(base, out_params, value) \
+	(*(base->sn_api?&(out_params->ver.v1.value):&(out_params->ver.v0.value)))
+
+#define OUT_PARAMS_SIZE_VER(base, out_params) \
+	(base->sn_api?sizeof(out_params->ver.v1):sizeof(out_params->ver.v0))
+
 
 static void in_send_cb(GstDspBase *base, struct td_buffer *tb)
 {
@@ -235,7 +248,7 @@ static void strip_sps_pps_header(GstDspBase *base,
 	char *data = b->data;
 	unsigned i;
 
-	if (param->nalus_per_frame <= 1)
+	if (OUT_PARAMS_VER(base,param,nalus_per_frame) <= 1)
 		return;
 
 	if (!self->priv.h264.sps_received) {
@@ -243,11 +256,11 @@ static void strip_sps_pps_header(GstDspBase *base,
 		return;
 	}
 
-	for (i = 0; i < param->nalus_per_frame; i++) {
+	for (i = 0; i < OUT_PARAMS_VER(base,param,nalus_per_frame); i++) {
 		if ((data[4] & 0x1f) == 7 || (data[4] & 0x1f) == 8) {
-			data += param->nalu_sizes[i];
+			data += OUT_PARAMS_VER(base,param,nalu_sizes[i]);
 			b->data = data;
-			b->len -= param->nalu_sizes[i];
+			b->len -= OUT_PARAMS_VER(base,param,nalu_sizes[i]);
 		}
 	}
 }
@@ -267,8 +280,8 @@ static void out_recv_cb(GstDspBase *base, struct td_buffer *tb)
 	struct out_params *param;
 	param = tb->params->data;
 
-	pr_debug(base, "frame type: %d", param->frame_type);
-	tb->keyframe = (param->frame_type == 1 || param->frame_type == 4);
+	pr_debug(base, "frame type: %d", OUT_PARAMS_VER(base, param,frame_type));
+	tb->keyframe = (OUT_PARAMS_VER(base, param,frame_type) == 1 || OUT_PARAMS_VER(base, param,frame_type) == 4);
 
 	if (b->len == 0)
 		return;
@@ -384,7 +397,7 @@ static void setup_params(GstDspBase *base)
 	p->send_cb = in_send_cb;
 
 	p = base->ports[1];
-	gstdsp_port_setup_params(base, p, sizeof(*out_param), NULL);
+	gstdsp_port_setup_params(base, p, OUT_PARAMS_SIZE_VER(base, out_param), NULL);
 	p->recv_cb = out_recv_cb;
 }
 

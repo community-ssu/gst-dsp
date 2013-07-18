@@ -102,6 +102,8 @@ static void out_recv_cb(GstDspBase *base, struct td_buffer *tb)
 
 	if (G_UNLIKELY(param->skip_frame))
 		b->skip = TRUE;
+	else
+		b->skip = FALSE;
 
 	tb->keyframe = (param->frame_type == 0);
 }

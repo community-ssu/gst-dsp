@@ -26,5 +26,16 @@ bool gstdsp_map_buffer(void *self,
 		dmm_buffer_t *b);
 
 #define ARRAY_SIZE(arr) (sizeof(arr) / sizeof((arr)[0]))
+#define CODEC_DIR "/lib/dsp/"
+
+static inline gboolean sn_exist(const char *filename)
+{
+	gboolean res;
+	gchar  * codec_fname=g_build_filename(CODEC_DIR,filename,NULL);
+	res = g_file_test(codec_fname,G_FILE_TEST_EXISTS);
+	g_free(codec_fname);
+
+	return res;
+}
 
 #endif /* UTIL_H */
