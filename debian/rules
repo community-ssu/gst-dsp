@@ -1,0 +1,72 @@
+#!/usr/bin/make -f
+
+QUILT_STAMPFN ?= debian/stamp-patched
+MAKE += -e
+
+patch: $(QUILT_STAMPFN)
+$(QUILT_STAMPFN):
+	QUILT_PATCHES=debian/patches quilt --quiltrc /dev/null push -a || test $$? = 2
+	perl -p -i -e 's/\bqtdemux\b/notqtdemux/' *.c
+	touch $@
+
+unpatch:
+	perl -p -i -e 's/\bnotqtdemux\b/qtdemux/' *.c
+	QUILT_PATCHES=debian/patches quilt --quiltrc /dev/null pop -a -R || test $$? = 2
+	rm -rf .pc $(QUILT_STAMPFN)
+
+DEB_VERSION = $(shell dpkg-parsechangelog | egrep '^Version:' | cut -f 2 -d ' ')
+
+build: patch
+	dh_testdir
+	echo $(DEB_VERSION) > .version
+	$(MAKE) V=1 DSP_API=1
+
+install: build
+	dh_testdir
+	dh_testroot
+	dh_clean -k
+	dh_installdirs
+	$(MAKE) V=1 install doc-install DESTDIR=$(CURDIR)/debian/tmp
+
+binary-arch: install
+	dh_testdir -a
+	dh_testroot -a
+	dh_install --sourcedir=debian/tmp -a
+	dh_installdocs -a
+	dh_link -a
+	dh_strip --dbg-package=gstreamer0.10-dsp-dbg -a
+	dh_compress -a
+	dh_fixperms -a
+	dh_installdeb -a
+	dh_shlibdeps -a
+	dh_gencontrol -a
+	dh_md5sums -a
+	dh_builddeb -a
+
+binary-indep:
+
+binary: binary-arch binary-indep
+
+clean: unpatch
+	dh_testdir
+	$(MAKE) V=1 clean
+	dh_clean
+
+.PHONY: build install binary-arch binary-indep binary clean
+.PHONY: patch unpatch
+
+ORIGIN_REF := master
+PATCHES_REF := maemo6-patches
+
+update-patch-series:
+	mkdir -p debian/patches
+	rm -f debian/patches/*.patch
+	git format-patch -N -o debian/patches $(PATCHES_REF) ^$(ORIGIN_REF) | \
+	        xargs -n 1 basename > debian/patches/series
+	for patch in debian/patches/*.patch; do \
+		lines=$$(cat $$patch | wc -l) ; \
+		head -n $$(($$lines - 3)) $$patch > $${patch}.chomped ; \
+		mv $${patch}.chomped $$patch ; \
+	done
+	git ls-files --modified --others -z 'debian/patches/*.patch' 'debian/patches/series' | \
+		git update-index --add --remove -z --stdin

@@ -1,0 +1,33 @@
+Source: gst-dsp
+Section: libs
+Priority: optional
+Maintainer: Maemo Multimedia <multimedia@maemo.org>
+Build-Depends: debhelper (>= 5), libgstreamer0.10-dev, quilt,
+ gstreamer0.10-common-doc, gtk-doc-tools
+Standards-Version: 3.9.1
+
+Package: gstreamer0.10-dsp
+Architecture: armel
+Section: libs
+Depends: ${misc:Depends}, ${shlibs:Depends},
+ omap3-dsp-libraries-ti (>= 0.i3.6-2),
+ omap3-dsp-hd-codecs (>= 0.2.8-1)
+Description: GStreamer plug-in for TI's OMAP DSP.
+
+Package: gstreamer0.10-dsp-dbg
+Section: debug
+Priority: extra
+Architecture: armel
+Depends: ${misc:Depends}, gstreamer0.10-dsp (= ${binary:Version})
+Description: Debug symbols for gst-dsp.
+
+Package: gstreamer0.10-dsp-test
+Architecture: armel
+Section: misc
+Depends: ${misc:Depends}, ${shlibs:Depends}
+Description: Extra utilities to test gst-dsp.
+
+Package: gstreamer0.10-dsp-doc
+Architecture: armel
+Section: doc
+Description: Documentation for gst-dsp.

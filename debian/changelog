@@ -1,0 +1,1184 @@
+gst-dsp (0.10.1-2) unstable; urgency=low
+
+  * A bit more subtle regression fixes.
+
+ -- Maemo Multimedia <multimedia@maemo.org>  Tue, 14 Feb 2012 21:15:27 +0200
+
+gst-dsp (0.10.1-1) unstable; urgency=low
+
+  * Synchronize with upstream; no functional changes
+
+ -- Maemo Multimedia <multimedia@maemo.org>  Tue, 31 Jan 2012 19:46:40 +0200
+
+gst-dsp (0.10.0-7.2) unstable; urgency=low
+
+  * Another subtle regression fix.
+
+ -- Maemo Multimedia <multimedia@maemo.org>  Mon, 30 Jan 2012 22:04:10 +0200
+
+gst-dsp (0.10.0-7.1) unstable; urgency=low
+
+  * Fix trivial regression.
+
+ -- Maemo Multimedia <multimedia@maemo.org>  Fri, 27 Jan 2012 20:53:41 +0200
+
+gst-dsp (0.10.0-7) unstable; urgency=low
+
+  * Fix possible memory usage regression.
+
+ -- Maemo Multimedia <multimedia@maemo.org>  Tue, 17 Jan 2012 19:17:04 +0200
+
+gst-dsp (0.10.0-6.1) unstable; urgency=low
+
+  * Fix trivial regression.
+
+ -- Your Name <felipe.contreras@gmail.com>  Fri, 13 Jan 2012 22:15:06 +0200
+
+gst-dsp (0.10.0-6) unstable; urgency=low
+
+  * Cleanups from upstream.
+
+ -- Maemo Multimedia <multimedia@maemo.org>  Thu, 12 Jan 2012 20:08:04 +0200
+
+gst-dsp (0.10.0-5.2) unstable; urgency=low
+
+  * Fix yet another regression.
+
+ -- Maemo Multimedia <multimedia@maemo.org>  Thu, 22 Dec 2011 18:34:30 +0200
+
+gst-dsp (0.10.0-5.1) unstable; urgency=low
+
+  * Fix a regression from previous release.
+
+ -- Maemo Multimedia <multimedia@maemo.org>  Wed, 21 Dec 2011 20:33:13 +0200
+
+gst-dsp (0.10.0-5) unstable; urgency=low
+
+  * Improve event handling (Fixes: NB#286148)
+
+ -- Maemo Multimedia <multimedia@maemo.org>  Tue, 20 Dec 2011 17:46:27 +0200
+
+gst-dsp (0.10.0-4.2) unstable; urgency=low
+
+  * Fix regression in buffer tracking.
+
+ -- Maemo Multimedia <multimedia@maemo.org>  Mon, 12 Dec 2011 18:01:06 +0200
+
+gst-dsp (0.10.0-4.1) unstable; urgency=low
+
+  * Fix build.
+
+ -- Maemo Multimedia <multimedia@maemo.org>  Fat, 10 Dec 2011 18:12:08 +0200
+
+gst-dsp (0.10.0-4) unstable; urgency=low
+
+  * Keep proper ownership of buffers (Fixes: NB#285470)
+
+ -- Maemo Multimedia <multimedia@maemo.org>  Fri, 09 Dec 2011 21:14:18 +0200
+
+gst-dsp (0.10.0-3) unstable; urgency=low
+
+  * Fast unwind when buffers are empty
+
+ -- Maemo Multimedia <multimedia@maemo.org>  Tue, 06 Dec 2011 21:39:18 +0200
+
+gst-dsp (0.10.0-2.1) unstable; urgency=low
+
+  * Fix build.
+
+ -- Maemo Multimedia <multimedia@maemo.org>  Tue, 29 Nov 2011 16:25:03 +0200
+
+gst-dsp (0.10.0-2) unstable; urgency=low
+
+  * Use less memonory for video encoders.
+
+ -- Maemo Multimedia <multimedia@maemo.org>  Fri, 25 Nov 2011 17:36:06 +0200
+
+gst-dsp (0.10.0-1) unstable; urgency=low
+
+  * Bump version.
+
+ -- Maemo Multimedia <multimedia@maemo.org>  Fri, 25 Nov 2011 15:36:52 +0200
+
+gst-dsp (0.9.0-25) unstable; urgency=low
+
+  * Synchronize with upstream
+
+ -- Maemo Multimedia <multimedia@maemo.org>  Wed, 23 Nov 2011 23:44:56 +0200
+
+gst-dsp (0.9.0-24) unstable; urgency=low
+
+  * Tweak H264 encoder src template caps  (Fixes: NB#283498)
+
+ -- Maemo Multimedia <multimedia@maemo.org>  Thu, 10 Nov 2011 13:57:45 +0300
+
+gst-dsp (0.9.0-23) unstable; urgency=low
+
+  * Properly merge ipp functionality  (Fixes: NB#251643)
+
+ -- Maemo Multimedia <multimedia@maemo.org>  Mon, 07 Nov 2011 15:40:04 +0300
+
+gst-dsp (0.9.0-22) unstable; urgency=low
+
+  * Add getcaps functionality for pads in ipp
+
+ -- Maemo Multimedia <multimedia@maemo.org>  Fri, 03 Nov 2011 15:01:26 +0300
+
+gst-dsp (0.9.0-21) unstable; urgency=low
+
+  * Push pending events upon re-init  (Fixes: NB#287592)
+
+ -- Maemo Multimedia <multimedia@maemo.org>  Fri, 28 Oct 2011 12:25:44 +0300
+
+gst-dsp (0.9.0-20) unstable; urgency=low
+
+  * Add idr-interval property to hdh264enc  (Fixes: NB#275313)
+
+ -- Maemo Multimedia <multimedia@maemo.org>  Wed, 26 Oct 2011 15:26:23 +0300
+
+gst-dsp (0.9.0-19) unstable; urgency=low
+
+  * Fix DSP IPP gst-launch segfault  (Fixes: NB#284538)
+
+ -- Maemo Multimedia <multimedia@maemo.org>  Mon, 17 Oct 2011 14:53:13 +0300
+
+gst-dsp (0.9.0-18) unstable; urgency=low
+
+  * Fix image corruption when in still image pieplines  (Fixes: NB#284172)
+
+ -- Maemo Multimedia <multimedia@maemo.org>  Thu, 13 Oct 2011 14:49:03 +0300
+
+gst-dsp (0.9.0-17) unstable; urgency=low
+
+  * Fix H.264 parsing complication (Fixes: NB#282396)
+
+ -- Maemo Multimedia <multimedia@maemo.org>  Fri, 30 Sep 2011 16:15:43 +0300
+
+gst-dsp (0.9.0-16) unstable; urgency=low
+
+  * Process all events always (Fixes: NB#282474)
+  * Implement slice coding in HD H.264 enc (Fixes: NB#278644)
+  * Use improved build system
+
+ -- Maemo Multimedia <multimedia@maemo.org>  Wed, 28 Sep 2011 01:40:53 +0300
+
+gst-dsp (0.9.0-15) unstable; urgency=low
+
+  * Fix H.264 parsing regression from previous release
+  * Fix bad message handling from previous release
+  * Revert continuous IPP patches
+
+ -- Maemo Multimedia <multimedia@maemo.org>  Tue, 13 Sep 2011 20:14:15 +0300
+
+gst-dsp (0.9.0-14) unstable; urgency=low
+
+  * Fix hdh264enc intra-refresh (Fixes: NB#280733)
+  * Fix hdh264enc keyframe-interval > 10s (Fixes: NB#280700)
+  * Synchronize parsing code with upstream
+
+ -- Maemo Multimedia <multimedia@maemo.org>  Thu, 08 Sep 2011 03:54:32 +0300
+
+gst-dsp (0.9.0-13) unstable; urgency=low
+
+  * Allow continous usage of IPP
+
+ -- Maemo Multimedia <multimedia@maemo.org>  Wed, 24 Aug 2011 23:05:46 +0300
+
+gst-dsp (0.9.0-12) unstable; urgency=low
+
+  * Fix wrong QoS detection on vdec (Fixes: NB#275757)
+
+ -- Maemo Multimedia <multimedia@maemo.org>  Mon, 22 Aug 2011 17:21:19 +0300
+
+gst-dsp (0.9.0-11.1) unstable; urgency=low
+
+  * A bit more safety measures for previous release.
+
+ -- Maemo Multimedia <multimedia@maemo.org>  Thu, 18 Aug 2011 23:31:55 +0300
+
+gst-dsp (0.9.0-11) unstable; urgency=low
+
+  * Properly report latency for HD H.264 dec (Fixes: NB#274819)
+
+ -- Maemo Multimedia <multimedia@maemo.org>  Wed, 17 Aug 2011 15:12:28 +0300
+
+gst-dsp (0.9.0-10) unstable; urgency=low
+
+  * Disable JPEG encoder EOS detection (Fixes: NB#275299)
+  * Proper error out on keyframe-interval=0 (Fixes: NB#276507)
+
+ -- Maemo Multimedia <multimedia@maemo.org>  Mon, 15 Aug 2011 18:47:32 +0300
+
+gst-dsp (0.9.0-9.1) unstable; urgency=low
+
+  * Fix regression on frame-size change detection
+
+ -- Maemo Multimedia <multimedia@maemo.org>  Tue, 19 Jul 2011 21:02:49 +0300
+
+gst-dsp (0.9.0-9) unstable; urgency=low
+
+  * Implement dynamic framesize change on vdec (Fixes: NB#247726)
+  * Fix crash when source changes on vdec (Fixes: NB#238631)
+  * Add extra check for jpegenc (Fixes: NB#263412)
+
+ -- Maemo Multimedia <multimedia@maemo.org>  Mon, 18 Jul 2011 14:12:33 +0300
+
+gst-dsp (0.9.0-8) unstable; urgency=low
+
+  * Fix support for frame rotation in CBR mode (Fixes: NB#257800)
+
+ -- Maemo Multimedia <multimedia@maemo.org>  Thu, 07 Jul 2011 23:16:59 +0300
+
+gst-dsp (0.9.0-7) unstable; urgency=low
+
+  * Fix keyframe-interval for hdh264enc (Fixes: NB#268624)
+  * Fix quality for low resolutions in hdh264enc (Fixes: NB#241756)
+
+ -- Maemo Multimedia <multimedia@maemo.org>  Fri, 01 Jul 2011 14:00:04 +0300
+
+gst-dsp (0.9.0-6) unstable; urgency=low
+
+  * Check for policy preemption when initializing node (Fixes: NB#255511)
+
+ -- Maemo Multimedia <multimedia@maemo.org>  Thu, 16 Jun 2011 16:17:18 +0300
+
+gst-dsp (0.9.0-5) unstable; urgency=low
+
+  * Make policy preemption return the error correctly (Fixes: NB#254051)
+  * Report warnings to stdout (Fixes: NB#251907)
+
+ -- Maemo Multimedia <multimedia@maemo.org>  Mon, 30 May 2011 18:10:13 +0300
+
+gst-dsp (0.9.0-4) unstable; urgency=low
+
+  * Support for more VC-1 clips (Fixes: NB#248458)
+  * Properly report policy preemption (Fixes: NB#255511)
+
+ -- Maemo Multimedia <multimedia@maemo.org>  Mon, 16 May 2011 17:17:32 +0300
+
+gst-dsp (0.9.0-3.1) unstable; urgency=low
+
+  * Fix jpegenc regression from 0.8.0-0maemo29
+
+ -- Maemo Multimedia <multimedia@maemo.org>  Mon, 16 May 2011 17:15:32 +0300
+
+gst-dsp (0.9.0-3) unstable; urgency=low
+
+  * Build documentation package
+
+ -- Maemo Multimedia <multimedia@maemo.org>  Thu, 12 May 2011 19:08:25 +0300
+
+gst-dsp (0.9.0-2) unstable; urgency=low
+
+  * Add new 'mode' property for decoders (Fixes: NB#252017)
+  * Disable frame reordering for WVGA H.264 (Fixes: NB#249843)
+  * Relax MPEG-4 parsing checks (Fixes: NB#248602)
+
+ -- Maemo Multimedia <multimedia@maemo.org>  Wed, 11 May 2011 17:28:14 +0300
+
+gst-dsp (0.9.0-1) unstable; urgency=low
+
+  * Rebase on top of upstream
+
+ -- Maemo Multimedia <multimedia@maemo.org>  Wed, 11 May 2011 12:28:04 +0300
+
+gst-dsp (0.8.0-0maemo29) unstable; urgency=low
+
+  * Synchronize to upstream
+
+ -- Maemo Multimedia <multimedia@maemo.org>  Thu, 28 Apr 2011 01:35:06 +0300
+
+gst-dsp (0.8.0-0maemo28) unstable; urgency=low
+
+  * Enable pinned optimization in H.264 enc
+  * Lower priority of HD H.264 enc (Fixes: NB#249795)
+  * Improve H.264 keyframe handling
+
+ -- Maemo Multimedia <multimedia@maemo.org>  Fri, 22 Apr 2011 13:15:39 +0300
+
+gst-dsp (0.8.0-0maemo27) unstable; urgency=low
+
+  * Implement QoS on HD H.264 decoder (Fixes: NB#229835)
+  * Implement segment clipping (Fixes: NB#182426)
+  * Add 'quality' property to JPEG enc
+  * Improve HD H.264 enc performance (Fixes: NB#241749)
+
+ -- Maemo Multimedia <multimedia@maemo.org>  Fri, 15 Apr 2011 23:02:51 +0300
+
+gst-dsp (0.8.0-0maemo26) unstable; urgency=low
+
+  * Add new HD H.264 encoder
+
+ -- Maemo Multimedia <multimedia@maemo.org>  Wed, 13 Apr 2011 16:48:39 +0300
+
+gst-dsp (0.8.0-0maemo25) unstable; urgency=low
+
+  * Use HD H.264 HP codec for MP clips
+  * Updates for new HD H.264 BP codec
+
+ -- Maemo Multimedia <multimedia@maemo.org>  Tue, 12 Apr 2011 21:18:39 +0300
+
+gst-dsp (0.8.0-0maemo24) unstable; urgency=low
+
+  * Be gentler with debug prints
+  * Possible build fix for coverity
+  * Possible leak fixes
+
+ -- Maemo Multimedia <multimedia@maemo.org>  Fri, 08 Apr 2011 15:31:27 +0300
+
+gst-dsp (0.8.0-0maemo23.1) unstable; urgency=low
+
+  * Fix huge memory leak from previous release
+
+ -- Maemo Multimedia <multimedia@maemo.org>  Tue, 15 Mar 2011 18:14:50 +0200
+
+gst-dsp (0.8.0-0maemo23) unstable; urgency=low
+
+  * Improve performance of HD MPEG-4 venc (Fixes: NB#222937)
+
+ -- Maemo Multimedia <multimedia@maemo.org>  Fri, 04 Mar 2011 14:33:28 +0200
+
+gst-dsp (0.8.0-0maemo22) unstable; urgency=low
+
+  * Check for unexpected buffers (Fixes: NB#219759)
+
+ -- Maemo Multimedia <multimedia@maemo.org>  Tue, 01 Mar 2011 23:10:44 +0200
+
+gst-dsp (0.8.0-0maemo21) unstable; urgency=low
+
+  * Increase internal timestamp array (Fixes: NB#227763)
+
+ -- Maemo Multimedia <multimedia@maemo.org>  Wed, 23 Feb 2011 23:44:38 +0200
+
+gst-dsp (0.8.0-0maemo20.1) unstable; urgency=low
+
+  * Fix regression in previous version
+
+ -- Maemo Multimedia <multimedia@maemo.org>  Thu, 17 Feb 2011 21:21:28 +0200
+
+gst-dsp (0.8.0-0maemo20) unstable; urgency=low
+
+  * Various IPP improvements
+
+ -- Maemo Multimedia <multimedia@maemo.org>  Fri, 11 Feb 2011 14:57:34 +0200
+
+gst-dsp (0.8.0-0maemo19) unstable; urgency=low
+
+  * Build with verbose option
+  * Make sure c99 is specified
+
+ -- Maemo Multimedia <multimedia@maemo.org>  Tue, 08 Feb 2011 17:07:24 +0200
+
+gst-dsp (0.8.0-0maemo18) unstable; urgency=low
+
+  * General reorganization
+
+ -- Maemo Multimedia <multimedia@maemo.org>  Mon, 07 Feb 2011 23:38:14 +0200
+
+gst-dsp (0.8.0-0maemo17) unstable; urgency=low
+
+  * Hack for 'notqtdemux'
+
+ -- Maemo Multimedia <multimedia@maemo.org>  Mon, 31 Jan 2011 23:53:24 +0200
+
+gst-dsp (0.8.0-0maemo16) unstable; urgency=low
+
+  * Automatically guess intra-refresh mode (Fixes: NB#215177)
+  * Add DSP preemption awareness (Fixes: NB#219383)
+
+ -- Maemo Multimedia <multimedia@maemo.org>  Tue, 18 Jan 2011 21:25:41 +0200
+
+gst-dsp (0.8.0-0maemo15) unstable; urgency=low
+
+  * Fix H.263 encoder consistency for very low resolutions. (Fixes: NB#202552)
+
+ -- Maemo Multimedia <multimedia@maemo.org>  Wed, 29 Dec 2010 13:52:26 +0200
+
+gst-dsp (0.8.0-0maemo14) unstable; urgency=low
+
+  * Improve H.264 encoder caps (Fixes: NB#213274)
+  * Fix smal leaks in H.264 decoder
+  * Add IPP performance hooks
+
+ -- Maemo Multimedia <multimedia@maemo.org>  Mon, 20 Dec 2010 22:36:48 +0200
+
+gst-dsp (0.8.0-0maemo13) unstable; urgency=low
+
+  * Fix avc check regression in previous release
+
+ -- Maemo Multimedia <multimedia@maemo.org>  Wed, 15 Dec 2010 21:48:37 +0200
+
+gst-dsp (0.8.0-0maemo12) unstable; urgency=low
+
+  * Fix manual codec selection
+  * Disable jpeg decoder
+  * Add support to force H.264 HP codec
+
+ -- Maemo Multimedia <multimedia@maemo.org>  Tue, 14 Dec 2010 23:16:13 +0200
+
+gst-dsp (0.8.0-0maemo11) unstable; urgency=low
+
+  * Trivial codec-selection fixups.
+
+ -- Maemo Multimedia <multimedia@maemo.org>  Wed, 01 Dec 2010 22:18:18 +0200
+
+gst-dsp (0.8.0-0maemo10) unstable; urgency=low
+
+  * Reorganize patch series (no changes)
+
+ -- Maemo Multimedia <multimedia@maemo.org>  Mon, 29 Nov 2010 21:07:46 +0200
+
+gst-dsp (0.8.0-0maemo9) unstable; urgency=low
+
+  * Fix regression in 0.8.0-0maemo7
+
+ -- Maemo Multimedia <multimedia@maemo.org>  Thu, 25 Nov 2010 21:17:05 +0200
+
+gst-dsp (0.8.0-0maemo8) unstable; urgency=low
+
+  * Fix ipp eenf params parsing (Fixes: NB#206771)
+
+ -- Maemo Multimedia <multimedia@maemo.org>  Wed, 24 Nov 2010 13:48:48 +0200
+
+gst-dsp (0.8.0-0maemo7) unstable; urgency=low
+
+  * Improve EOS handling (Fixes: NB#202676)
+  * Improve HD MPEG-4 buffer size calc (Fixes: NB#203019)
+  * Fix memory leak in IPP eenf event (Fixes: NB#203358)
+
+ -- Maemo Multimedia <multimedia@maemo.org>  Tue, 23 Nov 2010 20:16:57 +0200
+
+gst-dsp (0.8.0-0maemo6) unstable; urgency=low
+
+  * Merge codec reorganization
+
+ -- Maemo Multimedia <multimedia@maemo.org>  Mon, 22 Nov 2010 21:48:43 +0200
+
+gst-dsp (0.8.0-0maemo5) unstable; urgency=low
+
+  * Introduce HD H.264 HP (Implemented: SWP#HVC-220)
+  * Increase rank of elements
+
+ -- Maemo Multimedia <multimedia@maemo.org>  Wed, 17 Nov 2010 21:09:40 +0200
+
+gst-dsp (0.8.0-0maemo4) unstable; urgency=low
+
+  * Improve H.264 mode and intra-refresh (Fixes: NB#203017)
+
+ -- Maemo Multimedia <multimedia@maemo.org>  Thu, 11 Nov 2010 14:05:49 +0200
+
+gst-dsp (0.8.0-0maemo3) unstable; urgency=low
+
+  * Use HD MPEG-4 for > WVGA clips (Fixes: NB#199892)
+
+ -- Maemo Multimedia <multimedia@maemo.org>  Fri, 05 Nov 2010 22:39:06 +0200
+
+gst-dsp (0.8.0-0maemo2) unstable; urgency=low
+
+  * Fix IPP regression from 0.7.1-0maemo60
+
+ -- Maemo Multimedia <multimedia@maemo.org>  Wed, 27 Oct 2010 12:08:44 +0300
+
+gst-dsp (0.8.0-0maemo1) unstable; urgency=low
+
+  * Update to latest upstream
+
+ -- Maemo Multimedia <multimedia@maemo.org>  Tue, 26 Oct 2010 00:35:11 +0300
+
+gst-dsp (0.7.1-0maemo61) unstable; urgency=low
+
+  * Tune H.264 QP value (Fixes: NB#190968)
+
+ -- Maemo Multimedia <multimedia@maemo.org>  Mon, 25 Oct 2010 21:59:29 +0300
+
+gst-dsp (0.7.1-0maemo60) unstable; urgency=low
+
+  * Plug some memory leaks (Fixes: NB#198505)
+
+ -- Maemo Multimedia <multimedia@maemo.org>  Fri, 22 Oct 2010 22:45:42 +0300
+
+gst-dsp (0.7.1-0maemo59) unstable; urgency=low
+
+  * Improvements for H.263 bitrate
+
+ -- Maemo Multimedia <multimedia@maemo.org>  Mon, 18 Oct 2010 21:48:56 +0300
+
+gst-dsp (0.7.1-0maemo58) unstable; urgency=low
+
+  * Fix lintian warnings
+  * Remove dsp-extra package
+
+ -- Maemo Multimedia <multimedia@maemo.org>  Thu, 14 Oct 2010 01:27:44 +0300
+
+gst-dsp (0.7.1-0maemo57) unstable; urgency=low
+
+  * Fix for MP4 muxing (Fixes: NB#197533)
+  * Improve framesize checks in IPP (Fixes: NB#196780)
+  * Improved crop framesize support
+
+ -- Maemo Multimedia <multimedia@maemo.org>  Wed, 13 Oct 2010 03:44:12 +0300
+
+gst-dsp (0.7.1-0maemo56) unstable; urgency=low
+
+  * Update to match hd-codecs
+  * Differentiate non-fatal errors in hd-codecs (Fixes: NB#178050)
+  * Re-factor level selection in hd-codecs (Fixes: NB#190001)
+
+ -- Maemo Multimedia <multimedia@maemo.org>  Tue, 12 Oct 2010 01:02:48 +0300
+
+gst-dsp (0.7.1-0maemo55) unstable; urgency=low
+
+  * Remove unnecessary warnings
+  * Synchronize to hd-codec algo updates
+  * Synchronize error-handling to upstream
+
+ -- Maemo Multimedia <multimedia@maemo.org>  Wed, 06 Oct 2010 17:07:57 +0300
+
+gst-dsp (0.7.1-0maemo54) unstable; urgency=low
+
+  * Remove legacy MPEG-4 encoder
+  * Synchronize with upstream
+
+ -- Maemo Multimedia <multimedia@maemo.org>  Wed, 29 Sep 2010 11:37:01 +0300
+
+gst-dsp (0.7.1-0maemo53) unstable; urgency=low
+
+  * Fix H.264 level mark (Fixes: NB#190985)
+  * Improve H.264 stream-format selection
+  * Fix bitrate capping
+  * Get rid of unnecessary buffer in IPP
+  * Revamp timestamp handling
+  * Improve H.263 pixel aspect ratio handling
+
+ -- Maemo Multimedia <multimedia@maemo.org>  Tue, 28 Sep 2010 13:16:39 +0300
+
+gst-dsp (0.7.1-0maemo52) unstable; urgency=low
+
+  * Add noise-filter configuration options for ipp
+
+ -- Maemo Multimedia <multimedia@maemo.org>  Wed, 15 Sep 2010 21:57:03 +0300
+
+gst-dsp (0.7.1-0maemo51) unstable; urgency=low
+
+  * Improve emergency EOS timeout handling
+
+ -- Maemo Multimedia <multimedia@maemo.org>  Tue, 14 Sep 2010 21:40:57 +0300
+
+gst-dsp (0.7.1-0maemo50.1) unstable; urgency=low
+
+  * Bring back emergency EOS, disable only for IPP
+
+ -- Maemo Multimedia <multimedia@maemo.org>  Tue, 14 Sep 2010 21:23:06 +0300
+
+gst-dsp (0.7.1-0maemo50) unstable; urgency=low
+
+  * Remove emergency EOS
+  * Improvements in bitrate handling (Fixes: NB#187933)
+
+ -- Maemo Multimedia <multimedia@maemo.org>  Mon, 13 Sep 2010 12:21:28 +0300
+
+gst-dsp (0.7.1-0maemo49) unstable; urgency=low
+
+  * Reorganize EOS handling
+
+ -- Maemo Multimedia <multimedia@maemo.org>  Tue, 07 Sep 2010 21:46:42 +0300
+
+gst-dsp (0.7.1-0maemo48) unstable; urgency=low
+
+  * Return proper max-bitrate (regression) (Fixes: NB#190285)
+  * Set correct framerate for IPP (Fixes: NB#189863)
+
+ -- Maemo Multimedia <multimedia@maemo.org>  Tue, 07 Sep 2010 21:05:37 +0300
+
+gst-dsp (0.7.1-0maemo47) unstable; urgency=low
+
+  * Fix H.264 transform for corner cases (Fixes: NB#189585)
+  * Fix intra-refresh configuration
+
+ -- Maemo Multimedia <multimedia@maemo.org>  Mon, 06 Sep 2010 21:50:04 +0300
+
+gst-dsp (0.7.1-0maemo46) unstable; urgency=low
+
+  * Fix H.264 keyframe generation (Fixes: NB#153341)
+  * Enhance level calculation for HD MPEG-4 (Fixes: NB#186532)
+
+ -- Maemo Multimedia <multimedia@maemo.org>  Wed, 01 Sep 2010 19:39:20 +0300
+
+gst-dsp (0.7.1-0maemo45) unstable; urgency=low
+
+  * Improve max_bitrate calculations (Fixes: NB#187933)
+  * Improve emergency eos triggering (Fixes: NB#182232)
+
+ -- Maemo Multimedia <multimedia@maemo.org>  Tue, 31 Aug 2010 20:26:12 +0300
+
+gst-dsp (0.7.1-0maemo44) unstable; urgency=low
+
+  * Update to new H.264 MP decoder (Fixes: NB#171933)
+  * Use cyclic intra refresh for H.264 enc (Fixes: NB#176411)
+  * Flush buffers for WMV on EOS (Fixes: NB#184539)
+  * Fix max_bitrate on reusage (Fixes: NB#186706)
+
+ -- Maemo Multimedia <multimedia@maemo.org>  Thu, 26 Aug 2010 21:08:28 +0300
+
+gst-dsp (0.7.1-0maemo43) unstable; urgency=low
+
+  * Update hd-codecs version dependency
+  * Fix leaking comm buffers.
+  * MPEG4 decoder should return all frames (Fixes: NB#159514)
+
+ -- Maemo Multimedia <multimedia@maemo.org>  Thu, 19 Aug 2010 15:00:14 +0300
+
+gst-dsp (0.7.1-0maemo42) unstable; urgency=low
+
+  * Fix bitrate (hence recording quality) for WVGA recording (Fixes: NB#185196)
+  * Fix max-bitrate for MPEG4 and H264 video encoders (Fixes: NB#185359)
+
+ -- Maemo Multimedia <multimedia@maemo.org>  Tue, 17 Aug 2010 11:28:34 +0300
+
+gst-dsp (0.7.1-0maemo41) unstable; urgency=low
+
+  * MPEG4 sn to use double buffering to avoid MMUFAULT
+  * Provide fourcc in IPP element output caps
+
+ -- Maemo Multimedia <multimedia@maemo.org>  Thu, 12 Aug 2010 12:46:42 +0300
+
+gst-dsp (0.7.1-0maemo40) unstable; urgency=low
+
+  * Do not consume a timestamp for an empty output buffer (Fixes: NB#183612)
+  * IPP modification for camerabin
+  * Increase HDMPEG4 output buffer size
+
+ -- Maemo Multimedia <multimedia@maemo.org>  Tue, 10 Aug 2010 15:36:12 +0300
+
+gst-dsp (0.7.1-0maemo39.1) unstable; urgency=low
+
+  * Perform reset when going to READY (Fixes: NB#175596)
+  * Update jpegenc API to TI release L23.i3.4
+
+ -- Maemo Multimedia <multimedia@maemo.org>  Mon, 9 Aug 2010 17:20:44 +0300
+
+gst-dsp (0.7.1-0maemo38) unstable; urgency=low
+
+  * Update hd-codecs package name
+
+ -- Maemo Multimedia <multimedia@maemo.org>  Fri, 30 Jul 2010 20:07:54 +0300
+
+gst-dsp (0.7.1-0maemo37) unstable; urgency=low
+
+  * Add IPP support
+
+ -- Maemo Multimedia <multimedia@maemo.org>  Fri, 30 Jul 2010 19:32:09 +0300
+
+gst-dsp (0.7.1-0maemo36) unstable; urgency=low
+
+  * Improve buffer queing after EOS (Fixes: NB#182024)
+
+ -- Maemo Multimedia <multimedia@maemo.org>  Fri, 30 Jul 2010 17:51:26 +0300
+
+gst-dsp (0.7.1-0maemo35.1) unstable; urgency=low
+
+  * Revert IDR workaround
+
+ -- Maemo Multimedia <multimedia@maemo.org>  Wed, 21 Jul 2010 21:42:49 +0300
+
+gst-dsp (0.7.1-0maemo35) unstable; urgency=low
+
+  * More proper keyframe handling for H.264 encoder (Fixes: NB#180644)
+  * Fix IDR frames for H.264
+  * Fix rate control for H.263 encoder (Fixes: NB#175642)
+  * Wait for all the frames in H.264 encoder (Fixes: NB#176415)
+  * Improve MPEG-4 codec-data extraction
+
+ -- Maemo Multimedia <multimedia@maemo.org>  Tue, 20 Jul 2010 21:24:33 +0300
+
+gst-dsp (0.7.1-0maemo34) unstable; urgency=low
+
+  * Enable WMV
+
+ -- Maemo Multimedia <multimedia@maemo.org>  Mon, 12 Jul 2010 23:41:12 +0300
+
+gst-dsp (0.7.1-0maemo33) unstable; urgency=low
+
+  * Fix buffer leakage on EOS (Fixes: NB#177659)
+  * Fix jpegenc profile_id (Fixes: NB#171884)
+
+ -- Maemo Multimedia <multimedia@maemo.org>  Fri, 09 Jul 2010 03:20:11 +0300
+
+gst-dsp (0.7.1-0maemo32.1) unstable; urgency=low
+
+  * Fix encoder regression in previous release
+  * Add support I420 in encoders
+
+ -- Maemo Multimedia <multimedia@maemo.org>  Fri, 09 Jul 2010 00:22:44 +0300
+
+gst-dsp (0.7.1-0maemo32) unstable; urgency=low
+
+  * Generic upstream updates
+  * Improve bitrate calculation
+  * Fix for new TI H.264 encoder
+  * Fix timestamp reordering for MPEG-4
+  * Add support for JPEG decoder
+  * Remove libavparse
+
+ -- Maemo Multimedia <multimedia@maemo.org>  Wed, 07 Jul 2010 02:15:02 +0300
+
+gst-dsp (0.7.1-0maemo31) unstable; urgency=low
+
+  * Enable TI L23.i3.6
+
+ -- Maemo Multimedia <multimedia@maemo.org>  Thu, 01 Jul 2010 14:04:41 +0300
+
+gst-dsp (0.7.1-0maemo30.1) unstable; urgency=low
+
+  * Fix venc regression in previous release
+
+ -- Maemo Multimedia <multimedia@maemo.org>  Thu, 01 Jul 2010 02:12:36 +0300
+
+gst-dsp (0.7.1-0maemo30) unstable; urgency=low
+
+  * Generate codec-data for MPEG-4 (Fixes: NB#175596)
+  * Allow bitrate configuration based on downstream caps (Fixes: NB#172130)
+  * Improve bitrate calculation based on codec levels
+
+ -- Maemo Multimedia <multimedia@maemo.org>  Tue, 29 Jun 2010 01:26:37 +0300
+
+gst-dsp (0.7.1-0maemo29) unstable; urgency=low
+
+  * Fix timestamp reordering for H.264 MP (Fixes: NB#166725)
+  * Add gst-dsp-parse test.
+
+ -- Maemo Multimedia <multimedia@maemo.org>  Mon, 21 Jun 2010 23:16:07 +0300
+
+gst-dsp (0.7.1-0maemo28) unstable; urgency=low
+
+  * Refactor cache maintance code into new DMA API
+
+ -- Maemo Multimedia <multimedia@maemo.org>  Fri, 11 Jun 2010 16:06:41 +0300
+
+gst-dsp (0.7.1-0maemo27) unstable; urgency=low
+
+  * Fix venc max-bitrate getter (Fixes: NB#173274)
+  * Add restricted resolution in caps (Fixes: NB#154823)
+
+ -- Maemo Multimedia <multimedia@maemo.org>  Thu, 10 Jun 2010 20:53:47 +0300
+
+gst-dsp (0.7.1-0maemo26) unstable; urgency=low
+
+  * Fix color format negotiation (Fixes: NB#171310)
+  * Enable I420 support for all decoders
+  * Fixes for WMV decoder
+
+ -- Maemo Multimedia <multimedia@maemo.org>  Sun, 06 Jun 2010 23:28:59 +0300
+
+gst-dsp (0.7.1-0maemo25) unstable; urgency=low
+
+  * Fix jpegenc (again) (Fixes: NB#159555)
+
+ -- Maemo Multimedia <multimedia@maemo.org>  Fri, 28 May 2010 13:49:32 +0300
+
+gst-dsp (0.7.1-0maemo24) unstable; urgency=low
+
+  * Fix regression due to jpegenc memory usage improvement (Fixes: NB#170684)
+
+ -- Maemo Multimedia <multimedia@maemo.org>  Thu, 27 May 2010 14:42:33 +0300
+
+gst-dsp (0.7.1-0maemo23.1) unstable; urgency=low
+
+  * Fix previous release.
+
+ -- Maemo Multimedia <multimedia@maemo.org>  Wed, 26 May 2010 17:19:07 +0300
+
+gst-dsp (0.7.1-0maemo23) unstable; urgency=low
+
+  * Enable EOS alignment for HD encoders (Fixes: NB#165687)
+
+ -- Maemo Multimedia <multimedia@maemo.org>  Tue, 25 May 2010 21:48:28 +0300
+
+gst-dsp (0.7.1-0maemo22.1) unstable; urgency=low
+
+  * Fix previous release.
+
+ -- Maemo Multimedia <multimedia@maemo.org>  Tue, 25 May 2010 20:27:41 +0300
+
+gst-dsp (0.7.1-0maemo22) unstable; urgency=low
+
+  * Merge regresion fixes since 0.7.1-0maemo18.
+
+ -- Maemo Multimedia <multimedia@maemo.org>  Mon, 24 May 2010 17:42:43 +0300
+
+gst-dsp (0.7.1-0maemo21) unstable; urgency=low
+
+  * Add max-bitrate property (Fixes: NB#157391)
+  * Add cache maintanance for speculative prefetching
+
+ -- Maemo Multimedia <multimedia@maemo.org>  Wed, 19 May 2010 21:16:30 +0300
+
+gst-dsp (0.7.1-0maemo20.2) unstable; urgency=low
+
+  * Fix timeout regression (Fixes: NB#169684)
+
+ -- Maemo Multimedia <multimedia@maemo.org>  Fri, 21 May 2010 19:50:45 +0300
+
+gst-dsp (0.7.1-0maemo20.1) unstable; urgency=low
+
+  * Fix communication regression
+
+ -- Maemo Multimedia <multimedia@maemo.org>  Thu, 20 May 2010 16:41:36 +0300
+
+gst-dsp (0.7.1-0maemo20) unstable; urgency=low
+
+  * Fix jpegenc for TI L23.i4 (Fixes: NB#159555)
+  * Improve memory usage of jpegenc
+
+ -- Maemo Multimedia <multimedia@maemo.org>  Tue, 18 May 2010 23:20:48 +0300
+
+gst-dsp (0.7.1-0maemo19) unstable; urgency=low
+
+  * Properly identify H.263 for HD MP4v
+  * Improve heap profile selection for HD H.264
+  * Improve DSP timeout error detection
+
+ -- Maemo Multimedia <multimedia@maemo.org>  Tue, 11 May 2010 20:28:37 +0300
+
+gst-dsp (0.7.1-0maemo18) unstable; urgency=low
+
+  * Update dependencies
+  * Revert timeout API changes
+
+ -- Maemo Multimedia <multimedia@maemo.org>  Mon, 03 May 2010 17:21:56 +0300
+
+gst-dsp (0.7.1-0maemo17) unstable; urgency=low
+
+  * Fix jpegenc for TI L23.i3 (Fixes: NB#159555)
+  * Improvements for EOS workaround (Fixes: NB#164587)
+
+ -- Maemo Multimedia <multimedia@maemo.org>  Wed, 28 Apr 2010 18:03:54 +0300
+
+gst-dsp (0.7.1-0maemo16) unstable; urgency=low
+
+  * Update for new dspbridge error API
+  * Fix H.263 decoder for TI L23.i3.4
+
+ -- Maemo Multimedia <multimedia@maemo.org>  Tue, 27 Apr 2010 21:40:58 +0300
+
+gst-dsp (0.7.1-0maemo15) unstable; urgency=low
+
+  * Update for TI L23.i3.4 release.
+
+ -- Maemo Multimedia <multimedia@maemo.org>  Wed, 21 Apr 2010 20:16:59 +0300
+
+gst-dsp (0.7.1-0maemo14) unstable; urgency=low
+
+  * Fix hang regression from previous release (Fixes: NB#164830)
+
+ -- Maemo Multimedia <multimedia@maemo.org>  Tue, 20 Apr 2010 21:55:22 +0300
+
+gst-dsp (0.7.1-0maemo13) unstable; urgency=low
+
+  * Improve error handling from algos
+  * Support for I420 in HD codecs
+  * Improve DSP thread deinit
+  * Add support for HD H.264 MP 720p
+
+ -- Maemo Multimedia <multimedia@maemo.org>  Mon, 19 Apr 2010 21:53:38 +0300
+
+gst-dsp (0.7.1-0maemo12) unstable; urgency=low
+
+  * Also handle h264 codec-data in byte-stream format (Fixes: NB#161761)
+  * Provide duration on output buffers (Fixes: NB#160881)
+  * Enhance EOS alignment handling and enable for decoder (Fixes: NB#158264)
+
+ -- Maemo Multimedia <multimedia@maemo.org>  Fri, 09 Apr 2010 15:10:02 +0200
+
+gst-dsp (0.7.1-0maemo11) unstable; urgency=low
+
+  * Enhance H264BP decoder max reference frames handling (Fixes: NB#160540)
+  * Update h263p0 encoder create arguments (Fixes: NB#162410)
+
+ -- Maemo Multimedia <multimedia@maemo.org>  Wed, 31 Mar 2010 16:27:59 +0200
+
+gst-dsp (0.7.1-0maemo10) unstable; urgency=low
+
+  * Use new libavparse
+
+ -- Maemo Multimedia <multimedia@maemo.org>  Fri, 26 Mar 2010 20:37:48 +0200
+
+gst-dsp (0.7.1-0maemo9) unstable; urgency=low
+
+  * Updates for better error recovery
+
+ -- Maemo Multimedia <multimedia@maemo.org>  Thu, 25 Mar 2010 22:02:22 +0200
+
+gst-dsp (0.7.1-0maemo8) unstable; urgency=low
+
+  * Add keyframe-interval property for venc
+  * Tune HD MPEG-4 parameters for better bitrate
+  * Parse H.263 baseline for codec selection
+  * Better control for manual codec selection
+  * Add support for H.263 P0
+  * Additional checks for NULL buffers
+  * Ensure codec-data is not dropped (Fixes: NB#158671)
+
+ -- Maemo Multimedia <multimedia@maemo.org>  Wed, 24 Mar 2010 23:33:19 +0200
+
+gst-dsp (0.7.1-0maemo7) unstable; urgency=low
+
+  * Detect errors from algo (Fixes: NB#157511)
+  * Add option to avoid HD codecs
+
+ -- Maemo Multimedia <multimedia@maemo.org>  Thu, 11 Mar 2010 02:47:02 +0200
+
+gst-dsp (0.7.1-0maemo6) unstable; urgency=low
+
+  * Add H.263P0 decoding support
+  * Enhance H.263 parser for v3
+  * Fix HD MPEG-4 datatype missmatch (Fixes: NB#158223)
+
+ -- Maemo Multimedia <multimedia@maemo.org>  Tue, 09 Mar 2010 13:18:38 +0200
+
+gst-dsp (0.7.1-0maemo5) unstable; urgency=low
+
+  * Add codec dependencies
+
+ -- Maemo Multimedia <multimedia@maemo.org>  Wed, 03 Mar 2010 16:48:06 +0200
+
+gst-dsp (0.7.1-0maemo4) unstable; urgency=low
+
+  * Flush queued events properly (Fixes: NB#158211)
+  * Make keyframe marking thread-safe
+
+ -- Maemo Multimedia <multimedia@maemo.org>  Tue, 02 Mar 2010 20:02:25 +0200
+
+gst-dsp (0.7.1-0maemo3) unstable; urgency=low
+
+  * Add H.264 decoder (again)
+
+ -- Maemo Multimedia <multimedia@maemo.org>  Mon, 01 Mar 2010 17:10:08 +0200
+
+gst-dsp (0.7.1-0maemo2) unstable; urgency=low
+
+  * Remove H.264 MP decoer
+  * Fixes for TI codecs
+
+ -- Maemo Multimedia <multimedia@maemo.org>  Mon, 01 Mar 2010 17:09:01 +0200
+
+gst-dsp (0.7.1-0maemo1) unstable; urgency=low
+
+  * Add H.264 MP decoder
+  * Re-enable MPEG-4 parser
+  * Fallback to legacy codec for DivX
+  * Update to latest upstream
+
+ -- Maemo Multimedia <multimedia@maemo.org>  Thu, 25 Feb 2010 20:45:51 +0200
+
+gst-dsp (0.7.0-0maemo5) unstable; urgency=low
+
+  * Improve socket node deinit (Fixes: NB#156116)
+  * Fix H.264 streaming (Fixes: NB#153806)
+
+ -- Maemo Multimedia <multimedia@maemo.org>  Wed, 10 Feb 2010 13:51:21 +0200
+
+gst-dsp (0.7.0-0maemo4) unstable; urgency=low
+
+  * Add new HD codecs
+
+ -- Maemo Multimedia <multimedia@maemo.org>  Fri, 05 Feb 2010 23:19:27 +0200
+
+gst-dsp (0.7.0-0maemo3) unstable; urgency=low
+
+  * Use new ioctls
+  * Serialize newsegment events (Fixes: NB#145060)
+  * Improve codec-data parser for H.264
+  * Increase jpegenc framesize limits
+
+ -- Maemo Multimedia <multimedia@maemo.org>  Fri, 29 Jan 2010 18:12:27 +0200
+
+gst-dsp (0.7.0-0maemo2) unstable; urgency=low
+
+  * Fix IDR frames for H.264 venc (Fixes: NB#152798)
+
+ -- Maemo Multimedia <multimedia@maemo.org>  Fri, 15 Jan 2010 13:45:30 +0200
+
+gst-dsp (0.7.0-0maemo1) unstable; urgency=low
+
+  * Fix seeking regression (Fixes: NB#152943)
+
+ -- Maemo Multimedia <multimedia@maemo.org>  Wed, 13 Jan 2010 22:40:29 +0200
+
+gst-dsp (0.6.0-0maemo7) unstable; urgency=low
+
+  * Add dynamic bitrate support for venc
+  * Add support to force keyframe on venc (Fixes: NB#138388)
+  * Some cache handling improvements
+  * Improve debug logging
+  * Build with -fPIC
+
+ -- Maemo Multimedia <multimedia@maemo.org>  Tue, 29 Dec 2009 15:22:11 +0200
+
+gst-dsp (0.6.0-0maemo6) unstable; urgency=low
+
+  * Improve jpegenc memory usage
+  * Add bitrate property to venc
+  * Fix aspect-ratio parsing for RTP (Fixes: NB#104988)
+
+ -- Maemo Multimedia <multimedia@maemo.org>  Wed, 16 Dec 2009 15:58:13 +0200
+
+gst-dsp (0.6.0-0maemo5) unstable; urgency=low
+
+  * Add initial WMV support
+  * Important memory leak fixes (Fixes: NB#139428)
+  * Improve H.264 non-bytestream support
+  * Possible JPEG encoder fix
+
+ -- Maemo Multimedia <multimedia@maemo.org>  Thu, 10 Dec 2009 14:18:21 +0200
+
+gst-dsp (0.6.0-0maemo4) unstable; urgency=low
+
+  * Fix MPEG-4 regression in previous release
+  * Enable h263enc packet-mode
+  * Disable unrestricted mv for h263enc
+  * Random h264enc improvements
+
+ -- Maemo Multimedia <multimedia@maemo.org>  Mon, 26 Oct 2009 16:59:24 +0200
+
+gst-dsp (0.6.0-0maemo3) unstable; urgency=low
+
+  * Fix H.264 timestamps on bytestream mode
+  * Increase number of parallel buffers
+  * Plug a few leaks
+  * Minor optimizations
+
+ -- Maemo Multimedia <multimedia@maemo.org>  Thu, 22 Oct 2009 23:22:52 +0300
+
+gst-dsp (0.6.0-0maemo2) unstable; urgency=low
+
+  * Update MPEG-4 encoder params (TI requirement)
+
+ -- Maemo Multimedia <multimedia@maemo.org>  Tue, 06 Oct 2009 15:58:51 +0300
+
+gst-dsp (0.6.0-0maemo1) unstable; urgency=low
+
+  * Add new H.264 video encoder
+  * Change ranks of elements to 'primary'
+  * Rebase on top of upstream 'master'
+
+ -- Maemo Multimedia <multimedia@maemo.org>  Mon, 05 Oct 2009 18:08:12 +0300
+
+gst-dsp (0.5.0-0maemo18) unstable; urgency=low
+
+  * Improve DSP error handling
+  * Avoid extra cache flushing for performance (Fixes: NB#140963)
+
+ -- Maemo Multimedia <multimedia@maemo.org>  Mon, 28 Sep 2009 18:27:22 +0300
+
+gst-dsp (0.5.0-0maemo17) unstable; urgency=low
+
+  * Join codec-data buffers with first data buffers as TI claims is required.
+
+ -- Maemo Multimedia <multimedia@maemo.org>  Tue, 22 Sep 2009 20:31:27 +0300
+
+gst-dsp (0.5.0-0maemo16) unstable; urgency=low
+
+  * Fixes: NB#138597 - Plug a leak of one big buffer per play
+
+ -- Maemo Multimedia <multimedia@maemo.org>  Wed, 16 Sep 2009 22:56:05 +0300
+
+gst-dsp (0.5.0-0maemo15) unstable; urgency=low
+
+  * Fix build
+
+ -- Maemo Multimedia <multimedia@maemo.org>  Thu, 10 Sep 2009 14:19:19 +0300
+
+gst-dsp (0.5.0-0maemo14) unstable; urgency=low
+
+  * Fixes: NB#136555 - Add extra checks for DSP buffers to avoid memory
+    corruption
+  * Fixes: NB#136543 - Fix coverity warnings
+
+ -- Maemo Multimedia <multimedia@maemo.org>  Wed, 09 Sep 2009 21:17:13 +0300
+
+gst-dsp (0.5.0-0maemo13) unstable; urgency=low
+
+  * Fixes: NB#135634 - Properly invalidate control data to avoid empty buffers
+  * In case there's an empty buffer increase timestamp to avoid A/V sync drift
+
+ -- Maemo Multimedia <multimedia@maemo.org>  Mon, 31 Aug 2009 20:25:06 +0300
+
+gst-dsp (0.5.0-0maemo12) unstable; urgency=low
+
+  * Fixes: NB#136264 - Revert A/V sync patch which triggered stuttering
+
+ -- Maemo Multimedia <multimedia@maemo.org>  Mon, 31 Aug 2009 16:24:19 +0300
+
+gst-dsp (0.5.0-0maemo11) unstable; urgency=low
+
+  * Fix element leakage
+
+ -- Maemo Multimedia <multimedia@maemo.org>  Sat, 29 Aug 2009 10:29:04 +0300
+
+gst-dsp (0.5.0-0maemo10) unstable; urgency=low
+
+  * Fixes: NB#135634 - AV sync is lost in MPEG4 clips
+  * Revert cache flushing optimization temporarily
+  * Fix crashes on certain buffer allocation/freeing
+
+ -- Maemo Multimedia <multimedia@maemo.org>  Fri, 28 Aug 2009 14:44:55 +0300
+
+gst-dsp (0.5.0-0maemo9) unstable; urgency=low
+
+  * Fixes: NB#134992 - Fix thread leak
+
+ -- Maemo Multimedia <multimedia@maemo.org>  Thu, 27 Aug 2009 18:22:20 +0300
+
+gst-dsp (0.5.0-0maemo8) unstable; urgency=low
+
+  * Important optimization by avoiding extra cache flushing
+
+ -- Maemo Multimedia <multimedia@maemo.org>  Sun, 23 Aug 2009 12:16:55 +0300
+
+gst-dsp (0.5.0-0maemo7) unstable; urgency=low
+
+  * Fix and improve bitrate calculation
+  * Improve MPEG-4 parameters
+
+ -- Maemo Multimedia <multimedia@maemo.org>  Wed, 19 Aug 2009 14:49:20 +0300
+
+gst-dsp (0.5.0-0maemo6) unstable; urgency=low
+
+  * Workaround DSP flush bug (partially fixes NB#123682)
+  * Extra safetey for EOS handling
+  * Update for jpegenc DSP algo update
+
+ -- Maemo Multimedia <multimedia@maemo.org>  Tue, 18 Aug 2009 16:26:00 +0300
+
+gst-dsp (0.5.0-0maemo5) unstable; urgency=low
+
+  * Fixes: NB#127996 - Fix initial green frame on certain MPEG-4 videos
+
+ -- Maemo Multimedia <multimedia@maemo.org>  Mon, 17 Aug 2009 11:46:16 +0300
+
+gst-dsp (0.5.0-0maemo4) unstable; urgency=low
+
+  * Relax EOS signal checking
+
+ -- Maemo Multimedia <multimedia@maemo.org>  Wed, 12 Aug 2009 16:57:25 +0300
+
+gst-dsp (0.5.0-0maemo3) unstable; urgency=low
+
+  * Empty entry (due to integration issues)
+
+ -- Maemo Multimedia <multimedia@maemo.org>  Sat, 08 Aug 2009 23:40:20 +0300
+
+gst-dsp (0.5.0-0maemo2) unstable; urgency=low
+
+  * Fix mp4venc
+  * Set variable bitrate in mp4venc by default
+
+ -- Maemo Multimedia <multimedia@maemo.org>  Thu, 06 Aug 2009 17:16:14 +0300
+
+gst-dsp (0.5.0-0maemo1) unstable; urgency=low
+
+  * Initial release.
+
+ -- Maemo Multimedia <multimedia@maemo.org>  Wed, 05 Aug 2009 15:51:28 +0300
+
