@@ -9,9 +9,7 @@ Standards-Version: 3.9.1
 Package: gstreamer0.10-dsp
 Architecture: armel
 Section: libs
-Depends: ${misc:Depends}, ${shlibs:Depends},
- omap3-dsp-libraries-ti (>= 0.i3.6-2),
- omap3-dsp-hd-codecs (>= 0.2.8-1)
+Depends: ${misc:Depends}, ${shlibs:Depends}
 Description: GStreamer plug-in for TI's OMAP DSP.
 
 Package: gstreamer0.10-dsp-dbg
