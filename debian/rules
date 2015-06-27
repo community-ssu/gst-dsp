@@ -26,7 +26,7 @@ install: build
 	dh_testroot
 	dh_clean -k
 	dh_installdirs
-	$(MAKE) V=1 install doc-install DESTDIR=$(CURDIR)/debian/tmp
+	$(MAKE) V=1 install DESTDIR=$(CURDIR)/debian/tmp
 
 binary-arch: install
 	dh_testdir -a

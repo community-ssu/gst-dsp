@@ -2,8 +2,7 @@ Source: gst-dsp
 Section: libs
 Priority: optional
 Maintainer: Maemo Multimedia <multimedia@maemo.org>
-Build-Depends: debhelper (>= 5), libgstreamer0.10-dev, quilt,
- gstreamer0.10-common-doc, gtk-doc-tools
+Build-Depends: debhelper (>= 5), libgstreamer0.10-dev, quilt
 Standards-Version: 3.9.1
 
 Package: gstreamer0.10-dsp
@@ -24,8 +23,3 @@ Architecture: armel
 Section: misc
 Depends: ${misc:Depends}, ${shlibs:Depends}
 Description: Extra utilities to test gst-dsp.
-
-Package: gstreamer0.10-dsp-doc
-Architecture: armel
-Section: doc
-Description: Documentation for gst-dsp.
